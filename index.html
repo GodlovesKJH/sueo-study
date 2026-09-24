@@ -72,7 +72,7 @@ a.chip:hover{background:var(--accent-soft)}
 .topics{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .topics button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:14px}
 .topics button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .word{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px}
 .word.is-known{background:var(--known-soft);border-color:var(--known)}
 .word .w{font-size:20px;font-weight:600}
@@ -121,6 +121,21 @@ input[type=text],input[type=date],input[type=number],textarea.j,select{border:1p
 .plan h3{font-size:17px;margin-bottom:4px}
 .note-box{border-left:3px solid var(--accent);padding:6px 12px;background:var(--surface);border-radius:0 10px 10px 0;font-size:14px}
 @media (prefers-reduced-motion:no-preference){.bar>i{transition:width .4s ease}}
+/* 수형 그림 */
+.pics{display:flex;gap:6px;justify-content:center;background:#FFFFFF;border-radius:10px;padding:6px;border:1px solid var(--line)}
+.pics img{display:block;height:150px;width:auto;max-width:100%;object-fit:contain}
+.pics.two img{max-width:49%}
+.pics.big img{height:min(46vh,300px)}
+.pics.mini{padding:3px;gap:2px}
+.pics.mini img{height:64px}
+.desc{font-size:13px;color:var(--muted);line-height:1.55}
+.desc b{color:var(--ink);font-weight:600}
+.credit{font-size:12px;color:var(--muted);margin-top:28px;border-top:1px solid var(--line);padding-top:12px}
+.jamo.pic{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
+.jamo.pic button{aspect-ratio:auto;display:grid;gap:2px;justify-items:center;padding:6px 4px 4px;font-size:20px;line-height:1.1}
+.jamo.pic button img{height:96px;width:auto;max-width:100%;background:#fff;border-radius:6px}
+.sent-pics{display:flex;flex-wrap:wrap;gap:8px}
+.sent-pics figure{margin:0;display:grid;justify-items:center;gap:2px;font-size:12px;color:var(--muted)}
 /* 로그인 */
 .auth{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding-inline:16px;padding-block:40px}
 .auth .box{width:100%;max-width:420px;display:grid;gap:18px}
@@ -132,6 +147,7 @@ input[type=text],input[type=date],input[type=number],textarea.j,select{border:1p
 .userbar{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 .userbar button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-size:13px}
 </style>
+<script src="signs.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
@@ -177,7 +193,7 @@ window.FIREBASE_CONFIG = {
   <header class="top">
     <div>
       <h1>나의 수어 공부방</h1>
-      <div class="muted small">한국수어 · 동작은 국립국어원 한국수어사전 영상으로 확인합니다 <span class="sync" id="sync"></span></div>
+      <div class="muted small">한국수어 · 그림·설명·영상은 국립국어원 한국수어사전 자료입니다 <span class="sync" id="sync"></span></div>
       <div class="userbar"><span id="who"></span><button type="button" id="logout">로그아웃</button></div>
     </div>
     <div class="levels" role="tablist" aria-label="단계">
@@ -223,6 +239,7 @@ window.FIREBASE_CONFIG = {
     </div>
 
     <div data-pane="words" hidden>
+      <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
       <div class="topics" id="topicfilter"></div>
       <div class="row" style="margin-bottom:12px;justify-content:space-between">
         <label class="check"><input type="checkbox" id="hideKnown"> 익힌 단어 숨기기</label>
@@ -232,13 +249,14 @@ window.FIREBASE_CONFIG = {
     </div>
 
     <div data-pane="finger" hidden>
+      <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
       <div class="grid">
         <div class="panel">
           <div class="row" style="justify-content:space-between;margin-bottom:10px">
             <h3>지문자 · 자음</h3>
             <a class="chip" target="_blank" rel="noopener" href="" data-dict="지문자">사전에서 지문자 보기 ↗</a>
           </div>
-          <p class="muted small" style="margin:0 0 10px">영상을 보고 따라 한 뒤, 익힌 글자를 눌러 표시하세요.</p>
+          <p class="muted small" style="margin:0 0 10px">그림을 보고 따라 한 뒤, 익힌 글자를 눌러 표시하세요. 글자에 마우스를 올리면 설명이 나옵니다.</p>
           <div class="jamo" id="jamoC"></div>
           <h3 style="margin:18px 0 10px">지문자 · 모음</h3>
           <div class="jamo" id="jamoV"></div>
@@ -274,7 +292,7 @@ window.FIREBASE_CONFIG = {
         <span class="muted small" id="cardPos"></span>
       </div>
       <div class="panel card" id="card"></div>
-      <p class="muted small">단어를 보고 동작을 먼저 떠올려 보세요. 그다음 영상으로 확인하고, 맞았으면 <b>익혔어요</b>를 누릅니다.</p>
+      <p class="muted small">단어를 보고 동작을 먼저 떠올려 보세요. <b>확인하기</b>를 누르면 수형 그림과 설명이 나옵니다. 맞았으면 <b>익혔어요</b>를 누릅니다.</p>
     </div>
 
     <div data-pane="sent" hidden>
@@ -293,6 +311,7 @@ window.FIREBASE_CONFIG = {
         <div class="jlist" id="jlist"></div>
       </div>
     </div>
+    <p class="credit">수형 그림·수형 설명·영상 출처: <a href="https://sldict.korean.go.kr/" target="_blank" rel="noopener">국립국어원 한국수어사전</a> (CC BY-NC-ND 2.0 KR, 비영리 학습용으로 원본 그대로 사용)</p>
   </section>
 
   <section id="mid" hidden>
@@ -321,17 +340,26 @@ window.FIREBASE_CONFIG = {
 (function(){
 const COLL = "sueo-study";
 const DICT = "https://sldict.korean.go.kr/front/search/searchAllList.do?searchKeyword=";
-const dict = w => DICT + encodeURIComponent(w);
+const SW = window.SIGN_WORDS || {}, SF = window.SIGN_FINGER || {}, IMGB = window.SIGN_IMG_BASE || "";
+const VIEW = no => `https://sldict.korean.go.kr/front/sign/signContentsView.do?origin_no=${no}&top_category=CTE`;
+const dict = w => SW[w] ? VIEW(SW[w][0]) : DICT + encodeURIComponent(w);
+const fdict = k => SF[k] ? VIEW(SF[k][0]) : null;
+function pics(entry, cls=""){
+  if (!entry || !entry[1] || !entry[1].length) return null;
+  const box = el("div",{class:"pics"+(entry[1].length>1?" two":"")+(cls?" "+cls:"")});
+  entry[1].forEach((u,i) => box.append(el("img",{src:IMGB+u, alt:`${entry[3].split(",")[0]} 수형 그림 ${i+1}`, loading:"lazy", referrerpolicy:"no-referrer"})));
+  return box;
+}
 
 const TOPICS = [
   {k:"greet", n:"인사·기본", w:["안녕하세요","감사합니다","미안합니다","괜찮다","네","아니요","만나다","반갑다","이름","나","너","좋다","싫다","잘 가","수고하다","부탁"]},
   {k:"q", n:"의문사", w:["누구","무엇","어디","언제","왜","어떻게","얼마","몇"]},
   {k:"family", n:"가족", w:["가족","아버지","어머니","할아버지","할머니","형","오빠","누나","언니","동생","아들","딸","남편","아내"]},
-  {k:"time", n:"때·시간", w:["오늘","어제","내일","아침","점심","저녁","시간","주일","월","년","지금","나중"]},
-  {k:"school", n:"학교", w:["학교","선생님","학생","공부","친구","책","수업","교실","숙제","시험","배우다","가르치다"]},
+  {k:"time", n:"때·시간", w:["오늘","어제","내일","아침","낮","저녁","시간","주일","월","년","지금","나중"]},
+  {k:"school", n:"학교", w:["학교","선생님","학생","공부","친구","책","질문","교실","숙제","시험","배우다","가르치다"]},
   {k:"feel", n:"감정·상태", w:["기쁘다","슬프다","화나다","무섭다","피곤하다","아프다","배고프다","사랑","행복","걱정","기분","재미있다"]},
-  {k:"life", n:"생활·동작", w:["집","밥","물","화장실","병원","가다","오다","먹다","자다","알다","모르다","돕다","천천히","다시","말하다","수어"]},
-  {k:"church", n:"교회", w:["교회","하나님","예수","기도","찬양","예배","성경","감사","은혜","축복"]}
+  {k:"life", n:"생활·동작", w:["집안","쌀밥","물","화장실","병원","가다","오다","먹다","자다","알다","모르다","돕다","천천히","다시","말하다","수어"]},
+  {k:"church", n:"교회", w:["교회","하나님","예수","기도","찬양","목사","성경","감사","은혜","축복"]}
 ];
 const ALLWORDS = TOPICS.flatMap(t => t.w.map(w => ({w, t:t.k, tn:t.n})));
 
@@ -492,8 +520,11 @@ function renderWords(){
     cb.onchange = () => { if (cb.checked) S.known[x.w]=true; else delete S.known[x.w]; card.classList.toggle("is-known", cb.checked); scheduleSave(); renderToday(); };
     const ta = el("textarea",{id:"n-"+x.w, placeholder:"영상을 보고 기억할 요령 (예: 손모양, 움직임 방향)"}); ta.value = S.notes[x.w]||"";
     ta.oninput = () => { if (ta.value.trim()) S.notes[x.w]=ta.value; else delete S.notes[x.w]; scheduleSave(); };
+    const sg = SW[x.w];
     card.append(
       el("div",{class:"row",style:"justify-content:space-between"}, el("span",{class:"w"},x.w), el("span",{class:"muted small"},x.tn)),
+      pics(sg),
+      sg ? el("div",{class:"desc"}, sg[2]) : null,
       el("div",{class:"acts"}, el("a",{class:"chip",href:dict(x.w),target:"_blank",rel:"noopener"},"영상 보기 ↗"), el("label",{class:"check"}, cb, "익힘")),
       el("details",{open: S.notes[x.w]?true:false}, el("summary",{}, S.notes[x.w]?"내 메모":"메모 추가"), ta)
     );
@@ -505,11 +536,13 @@ $("hideKnown").onchange = renderWords;
 /* ---------- fingerspelling ---------- */
 function renderFinger(){
   const mk = (box, arr, pre) => { box.replaceChildren(); arr.forEach(c => {
-    const id = pre+c; const b = el("button",{class:S.fs[id]?"is-known":"", "aria-pressed":!!S.fs[id], title:"익혔으면 눌러서 표시"}, c);
+    const id = pre+c, sg = SF[id];
+    const b = el("button",{class:S.fs[id]?"is-known":"", "aria-pressed":!!S.fs[id], title:(sg?sg[2]+"\n":"")+"눌러서 익힘 표시"},
+      sg && sg[1][0] ? el("img",{src:IMGB+sg[1][0], alt:c+" 수형 그림", loading:"lazy", referrerpolicy:"no-referrer"}) : null, c);
     b.onclick = () => { if (S.fs[id]) delete S.fs[id]; else S.fs[id]=true; b.classList.toggle("is-known", !!S.fs[id]); b.setAttribute("aria-pressed", !!S.fs[id]); scheduleSave(); renderToday(); };
     box.append(b); }); };
   mk($("jamoC"), CONS, "c:"); mk($("jamoV"), VOWS, "v:"); mk($("nums"), NUMS, "n:");
-  $("nums").querySelectorAll("button").forEach(b => { if (b.textContent.length>3) b.style.fontSize="18px"; });
+  ["jamoC","jamoV","nums"].forEach(id => $(id).classList.add("pic"));
 }
 const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ".split("");
 const JUNG = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ".split("");
@@ -526,7 +559,10 @@ function decompose(str){
   return out;
 }
 $("spellRand").onclick = () => { $("spellIn").value = SPELL_WORDS[Math.floor(Math.random()*SPELL_WORDS.length)]; $("spellWord").textContent = $("spellIn").value; $("spellOut").replaceChildren(); };
-$("spellShow").onclick = () => { const w = $("spellIn").value.trim(); if(!w) return; $("spellWord").textContent = w; $("spellOut").replaceChildren(...decompose(w).map(j => el("span",{},j))); };
+$("spellShow").onclick = () => { const w = $("spellIn").value.trim(); if(!w) return; $("spellWord").textContent = w; $("spellOut").replaceChildren(...decompose(w).map(j => {
+  const sg = SF["c:"+j] || SF["v:"+j];
+  return sg && sg[1][0] ? el("figure",{class:"sent-pics",style:"margin:0;display:grid;justify-items:center;gap:2px"}, el("img",{src:IMGB+sg[1][0], alt:j, loading:"lazy", referrerpolicy:"no-referrer", style:"height:80px;background:#fff;border-radius:8px"}), el("span",{},j)) : el("span",{},j);
+})); };
 $("spellIn").addEventListener("keydown", e => { if (e.key==="Enter") $("spellShow").click(); });
 
 /* ---------- cards ---------- */
@@ -546,9 +582,11 @@ function renderCard(){
   const inner = el("div",{style:"display:grid;gap:14px;justify-items:center"},
     el("div",{class:"meta"}, x.tn), el("div",{class:"front"}, x.w));
   if (!revealed){
-    inner.append(el("p",{class:"muted small",style:"margin:0"},"손으로 먼저 표현해 보세요"),
+    inner.append(el("p",{class:"muted small",style:"margin:0"},"손으로 먼저 표현해 본 뒤 그림으로 확인하세요"),
       el("button",{class:"btn primary",onclick:()=>{revealed=true;renderCard();}},"확인하기"));
   } else {
+    const sg = SW[x.w];
+    if (sg){ inner.append(pics(sg,"big"), el("div",{class:"desc",style:"max-width:46ch"}, sg[2])); }
     if (S.notes[x.w]) inner.append(el("div",{class:"note"}, "내 메모: ", S.notes[x.w]));
     inner.append(el("a",{class:"chip",href:dict(x.w),target:"_blank",rel:"noopener"},"사전 영상으로 확인 ↗"),
       el("div",{class:"row",style:"justify-content:center"},
@@ -567,7 +605,9 @@ function renderSentences(){
     s.g.forEach((w,i) => { if (i) g.append(el("span",{class:"arrow"},"·"));
       g.append(w.startsWith("(") ? el("span",{class:"chip"},w) : el("a",{class:"chip",href:dict(w),target:"_blank",rel:"noopener"},w)); });
     if (s.q) g.append(el("span",{class:"muted small",style:"margin-left:6px"},"+ 의문 표정"));
-    box.append(el("div",{class:"sent"}, el("div",{class:"k"},s.k), g));
+    const strip = el("div",{class:"sent-pics"});
+    s.g.forEach(w => { const sg = SW[w]; if (sg && sg[1].length) strip.append(el("figure",{}, pics(sg,"mini"), el("span",{},w))); });
+    box.append(el("div",{class:"sent"}, el("div",{class:"k"},s.k), g, strip.childNodes.length ? strip : null));
   });
 }
 
