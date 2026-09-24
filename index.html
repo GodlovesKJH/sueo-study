@@ -152,7 +152,7 @@ window.FIREBASE_CONFIG = {
   <div class="box">
     <div>
       <h1>나의 수어 공부방</h1>
-      <p class="muted" style="margin:4px 0 0">휴대폰번호와 이름만으로 시작합니다. 어느 기기에서든 같은 번호와 이름으로 들어오면 진도가 이어집니다.</p>
+      <p class="muted" style="margin:4px 0 0">휴대폰번호만으로 시작합니다. 어느 기기에서든 같은 번호로 들어오면 진도가 이어집니다.</p>
     </div>
     <div class="levels" role="tablist" aria-label="가입 또는 로그인">
       <button type="button" role="tab" id="mode-join" aria-selected="true" style="flex:1">처음이에요</button>
@@ -160,15 +160,14 @@ window.FIREBASE_CONFIG = {
     </div>
     <form id="authForm" class="panel" novalidate>
       <label for="aphone">휴대폰번호<input type="tel" id="aphone" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" required></label>
-      <label for="aname">이름<input type="text" id="aname" autocomplete="name" placeholder="홍길동" required></label>
       <div class="consent" id="consentRow">
-        <div>수집 항목: 휴대폰번호, 이름 · 목적: 학습 기록 저장과 본인 확인 · 보관: 탈퇴 요청 시까지</div>
+        <div>수집 항목: 휴대폰번호 · 목적: 학습 기록 저장 · 보관: 탈퇴 요청 시까지</div>
         <label class="check" style="color:var(--ink)"><input type="checkbox" id="consent"> 개인정보 수집·이용에 동의합니다</label>
       </div>
       <button class="btn primary" id="authBtn" type="submit" style="padding:12px">가입하고 시작하기</button>
       <div class="msg" id="authMsg" role="alert"></div>
     </form>
-    <p class="muted small" id="authNote" style="margin:0">비밀번호가 없으므로 번호와 이름을 아는 사람은 기록을 볼 수 있습니다.</p>
+    <p class="muted small" id="authNote" style="margin:0">비밀번호가 없으므로 번호를 아는 사람은 기록을 볼 수 있습니다.</p>
   </div>
 </section>
 
@@ -386,8 +385,8 @@ async function flush(){
 const normPhone = v => (v||"").replace(/[^0-9]/g, "");
 const fmtPhone = p => p.length===11 ? `${p.slice(0,3)}-${p.slice(3,7)}-${p.slice(7)}` : p;
 
-async function signIn(phone, name, isNew){
-  user = {phone, name};
+async function signIn(phone, isNew){
+  user = {phone};
   const cached = lsGet(cacheKey());
   S = {known:{}, notes:{}, fs:{}}; J = [];
   if (cached){ S = Object.assign(S, cached.S||{}); J = cached.J||[]; }
@@ -396,12 +395,11 @@ async function signIn(phone, name, isNew){
     const snap = await ref.get();
     if (snap.exists){
       const d = snap.data();
-      if ((d.name||"").trim() !== name) { ref = null; user = null; throw new Error("name"); }
       S = {known:{...(d.known||{})}, notes:{...(d.notes||{})}, fs:{...(d.fs||{})}}; J = Array.isArray(d.journal) ? d.journal : [];
       ref.update({lastSeen:new Date().toISOString()}).catch(()=>{});
     } else {
       if (!isNew) { ref = null; user = null; throw new Error("nouser"); }
-      await ref.set({phone, name, createdAt:new Date().toISOString(), lastSeen:new Date().toISOString(), known:S.known, notes:S.notes, fs:S.fs, journal:J});
+      await ref.set({phone, createdAt:new Date().toISOString(), lastSeen:new Date().toISOString(), known:S.known, notes:S.notes, fs:S.fs, journal:J});
     }
     setSync("동기화됨");
   } else {
@@ -597,7 +595,7 @@ function renderAll(){ renderToday(); renderTopicFilter(); renderWords(); renderF
 fillCardTopic();
 function enterApp(){
   $("auth").hidden = true; $("app").hidden = false;
-  $("who").textContent = `${user.name} · ${fmtPhone(user.phone)}`;
+  $("who").textContent = fmtPhone(user.phone);
   renderAll();
   try { const t = localStorage.getItem("sueo-tab"); if (t) setTab(t); } catch(e){}
 }
@@ -614,15 +612,13 @@ $("mode-login").onclick = () => setAuthMode("login");
 $("aphone").addEventListener("input", e => { const p = normPhone(e.target.value).slice(0,11); e.target.value = fmtPhone(p); });
 $("authForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const phone = normPhone($("aphone").value), name = $("aname").value.trim(), msg = $("authMsg");
+  const phone = normPhone($("aphone").value), msg = $("authMsg");
   if (!/^01[016789][0-9]{7,8}$/.test(phone)) { msg.textContent = "휴대폰번호를 다시 확인해 주세요. (예: 010-1234-5678)"; return; }
-  if (name.length < 2) { msg.textContent = "이름을 두 글자 이상 입력해 주세요."; return; }
   if (authMode==="join" && !$("consent").checked) { msg.textContent = "개인정보 수집·이용에 동의해 주세요."; return; }
   $("authBtn").disabled = true; msg.textContent = "확인 중…";
-  try { await signIn(phone, name, authMode==="join"); enterApp(); }
+  try { await signIn(phone, authMode==="join"); enterApp(); }
   catch(err){
-    msg.textContent = err.message==="name" ? "이 번호로 가입된 이름과 다릅니다. 가입할 때 쓴 이름을 입력해 주세요."
-      : err.message==="nouser" ? "가입된 번호가 없습니다. '처음이에요'에서 가입해 주세요."
+    msg.textContent = err.message==="nouser" ? "가입된 번호가 없습니다. '처음이에요'에서 가입해 주세요."
       : "연결에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.";
   }
   $("authBtn").disabled = false;
@@ -630,11 +626,11 @@ $("authForm").addEventListener("submit", async e => {
 if (!fs) $("authNote").textContent = "지금은 서버 연결 전이라 기록이 이 브라우저에만 저장됩니다.";
 (async () => {
   const saved = lsGet(USER_KEY);
-  if (saved && saved.phone && saved.name){
-    try { await signIn(saved.phone, saved.name, false); enterApp(); return; }
+  if (saved && saved.phone){
+    try { await signIn(saved.phone, false); enterApp(); return; }
     catch(e){
-      if (e.message==="name" || e.message==="nouser"){ try { localStorage.removeItem(USER_KEY); } catch(_){} }
-      else { $("aphone").value = fmtPhone(saved.phone); $("aname").value = saved.name; setAuthMode("login"); $("authMsg").textContent = "연결에 실패했습니다. 인터넷 연결을 확인하고 '들어가기'를 눌러 주세요."; }
+      if (e.message==="nouser"){ try { localStorage.removeItem(USER_KEY); } catch(_){} }
+      else { $("aphone").value = fmtPhone(saved.phone); setAuthMode("login"); $("authMsg").textContent = "연결에 실패했습니다. 인터넷 연결을 확인하고 '들어가기'를 눌러 주세요."; }
     }
   }
   $("auth").hidden = false;

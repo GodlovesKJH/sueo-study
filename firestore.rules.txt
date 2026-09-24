@@ -2,10 +2,7 @@
 // 번호로 문서 하나를 읽고 쓰는 것만 허용하고, 가입자 목록 조회(list)와 삭제는 막습니다.
 match /sueo-study/{phone} {
   allow get: if true;
-  allow create: if request.resource.data.phone == phone
-                && request.resource.data.name is string
-                && request.resource.data.name.size() >= 2;
-  allow update: if request.resource.data.phone == resource.data.phone
-                && request.resource.data.name == resource.data.name;
+  allow create: if request.resource.data.phone == phone;
+  allow update: if request.resource.data.phone == resource.data.phone;
   allow list, delete: if false;
 }
