@@ -193,7 +193,7 @@ window.FIREBASE_CONFIG = {
   <header class="top">
     <div>
       <h1>나의 수어 공부방</h1>
-      <div class="muted small">한국수어 · 그림·설명·영상은 국립국어원 한국수어사전 자료입니다 <span class="sync" id="sync"></span></div>
+      <div class="muted small">한국수어 · 그림과 설명은 국립국어원 한국수어사전 자료입니다 <span class="sync" id="sync"></span></div>
       <div class="userbar"><span id="who"></span><button type="button" id="logout">로그아웃</button></div>
     </div>
     <div class="levels" role="tablist" aria-label="단계">
@@ -234,7 +234,7 @@ window.FIREBASE_CONFIG = {
         <div class="topicrows" id="topicrows"></div>
       </div>
       <div class="note-box" style="margin-top:16px">
-        공부 순서 제안: <b>지문자</b>로 손모양에 익숙해지기 → <b>인사·기본</b>, <b>의문사</b> 단어 → 짧은 <b>문장</b>으로 묶어 보기 → 카드로 매일 복습. 영상을 본 뒤 기억할 요령은 단어 카드의 <b>메모</b>에 직접 적어 두세요.
+        공부 순서 제안: <b>지문자</b>로 손모양에 익숙해지기 → <b>인사·기본</b>, <b>의문사</b> 단어 → 짧은 <b>문장</b>으로 묶어 보기 → 카드로 매일 복습. 그림을 본 뒤 기억할 요령은 단어 카드의 <b>메모</b>에 직접 적어 두세요.
       </div>
     </div>
 
@@ -252,20 +252,14 @@ window.FIREBASE_CONFIG = {
       <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
       <div class="grid">
         <div class="panel">
-          <div class="row" style="justify-content:space-between;margin-bottom:10px">
-            <h3>지문자 · 자음</h3>
-            <a class="chip" target="_blank" rel="noopener" href="" data-dict="지문자">사전에서 지문자 보기 ↗</a>
-          </div>
+          <h3 style="margin-bottom:10px">지문자 · 자음</h3>
           <p class="muted small" style="margin:0 0 10px">그림을 보고 따라 한 뒤, 익힌 글자를 눌러 표시하세요. 글자에 마우스를 올리면 설명이 나옵니다.</p>
           <div class="jamo" id="jamoC"></div>
           <h3 style="margin:18px 0 10px">지문자 · 모음</h3>
           <div class="jamo" id="jamoV"></div>
         </div>
         <div class="panel">
-          <div class="row" style="justify-content:space-between;margin-bottom:10px">
-            <h3>지숫자</h3>
-            <a class="chip" target="_blank" rel="noopener" href="" data-dict="지숫자">사전에서 지숫자 보기 ↗</a>
-          </div>
+          <h3 style="margin-bottom:10px">지숫자</h3>
           <div class="jamo" id="nums"></div>
         </div>
         <div class="panel">
@@ -296,7 +290,7 @@ window.FIREBASE_CONFIG = {
     </div>
 
     <div data-pane="sent" hidden>
-      <div class="note-box" style="margin-bottom:14px">아래 문장은 한국어 문장과 그 안에 쓰이는 핵심 단어입니다. 수어 문장은 조사를 거의 쓰지 않고 표정(비수지 신호)이 함께 쓰이므로, 정확한 어순과 표정은 사전의 문장 영상이나 선생님께 확인하세요.</div>
+      <div class="note-box" style="margin-bottom:14px">아래 문장은 한국어 문장과 그 안에 쓰이는 핵심 단어입니다. 수어 문장은 조사를 거의 쓰지 않고 표정(비수지 신호)이 함께 쓰이므로, 정확한 어순과 표정은 수어 선생님께 확인하세요.</div>
       <div class="panel" id="sentences"></div>
     </div>
 
@@ -311,7 +305,7 @@ window.FIREBASE_CONFIG = {
         <div class="jlist" id="jlist"></div>
       </div>
     </div>
-    <p class="credit">수형 그림·수형 설명·영상 출처: <a href="https://sldict.korean.go.kr/" target="_blank" rel="noopener">국립국어원 한국수어사전</a> (CC BY-NC-ND 2.0 KR, 비영리 학습용으로 원본 그대로 사용)</p>
+    <p class="credit">수형 그림·수형 설명 출처: <a href="https://sldict.korean.go.kr/" target="_blank" rel="noopener">국립국어원 한국수어사전</a> (CC BY-NC-ND 2.0 KR, 비영리 학습용으로 원본 그대로 사용)</p>
   </section>
 
   <section id="mid" hidden>
@@ -339,11 +333,7 @@ window.FIREBASE_CONFIG = {
 <script>
 (function(){
 const COLL = "sueo-study";
-const DICT = "https://sldict.korean.go.kr/front/search/searchAllList.do?searchKeyword=";
 const SW = window.SIGN_WORDS || {}, SF = window.SIGN_FINGER || {}, IMGB = window.SIGN_IMG_BASE || "";
-const VIEW = no => `https://sldict.korean.go.kr/front/sign/signContentsView.do?origin_no=${no}&top_category=CTE`;
-const dict = w => SW[w] ? VIEW(SW[w][0]) : DICT + encodeURIComponent(w);
-const fdict = k => SF[k] ? VIEW(SF[k][0]) : null;
 function pics(entry, cls=""){
   if (!entry || !entry[1] || !entry[1].length) return null;
   const box = el("div",{class:"pics"+(entry[1].length>1?" two":"")+(cls?" "+cls:"")});
@@ -445,7 +435,6 @@ const $ = id => document.getElementById(id);
 const el = (tag, attrs={}, ...kids) => { const e = document.createElement(tag);
   for (const [k,v] of Object.entries(attrs)){ if (k==="class") e.className=v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else if (v!==false && v!=null) e.setAttribute(k, v===true?"":v); }
   for (const c of kids.flat()) if (c!=null) e.append(c.nodeType?c:document.createTextNode(c)); return e; };
-document.querySelectorAll("[data-dict]").forEach(a => a.href = dict(a.dataset.dict));
 
 function stats(){
   const kw = ALLWORDS.filter(x => S.known[x.w]).length;
@@ -517,14 +506,14 @@ function renderWords(){
     const cb = el("input",{type:"checkbox", id:"k-"+x.w}); cb.checked = !!S.known[x.w];
     const card = el("div",{class:"word"+(S.known[x.w]?" is-known":"")});
     cb.onchange = () => { if (cb.checked) S.known[x.w]=true; else delete S.known[x.w]; card.classList.toggle("is-known", cb.checked); scheduleSave(); renderToday(); };
-    const ta = el("textarea",{id:"n-"+x.w, placeholder:"영상을 보고 기억할 요령 (예: 손모양, 움직임 방향)"}); ta.value = S.notes[x.w]||"";
+    const ta = el("textarea",{id:"n-"+x.w, placeholder:"그림을 보고 기억할 요령 (예: 손모양, 움직임 방향)"}); ta.value = S.notes[x.w]||"";
     ta.oninput = () => { if (ta.value.trim()) S.notes[x.w]=ta.value; else delete S.notes[x.w]; scheduleSave(); };
     const sg = SW[x.w];
     card.append(
       el("div",{class:"row",style:"justify-content:space-between"}, el("span",{class:"w"},x.w), el("span",{class:"muted small"},x.tn)),
       pics(sg),
       sg ? el("div",{class:"desc"}, sg[2]) : null,
-      el("div",{class:"acts"}, el("a",{class:"chip",href:dict(x.w),target:"_blank",rel:"noopener"},"영상 보기 ↗"), el("label",{class:"check"}, cb, "익힘")),
+      el("div",{class:"acts"}, el("span"), el("label",{class:"check"}, cb, "익힘")),
       el("details",{open: S.notes[x.w]?true:false}, el("summary",{}, S.notes[x.w]?"내 메모":"메모 추가"), ta)
     );
     box.append(card);
@@ -587,8 +576,7 @@ function renderCard(){
     const sg = SW[x.w];
     if (sg){ inner.append(pics(sg,"big"), el("div",{class:"desc",style:"max-width:46ch"}, sg[2])); }
     if (S.notes[x.w]) inner.append(el("div",{class:"note"}, "내 메모: ", S.notes[x.w]));
-    inner.append(el("a",{class:"chip",href:dict(x.w),target:"_blank",rel:"noopener"},"사전 영상으로 확인 ↗"),
-      el("div",{class:"row",style:"justify-content:center"},
+    inner.append(el("div",{class:"row",style:"justify-content:center"},
         el("button",{class:"btn",onclick:()=>{pos++;revealed=false;renderCard();}},"다시 볼게요"),
         el("button",{class:"btn known",onclick:()=>{S.known[x.w]=true;scheduleSave();renderToday();renderWords();pos++;revealed=false;renderCard();}},"익혔어요")));
   }
@@ -602,7 +590,7 @@ function renderSentences(){
   SENTS.forEach(s => {
     const g = el("div",{class:"gloss"});
     s.g.forEach((w,i) => { if (i) g.append(el("span",{class:"arrow"},"·"));
-      g.append(w.startsWith("(") ? el("span",{class:"chip"},w) : el("a",{class:"chip",href:dict(w),target:"_blank",rel:"noopener"},w)); });
+      g.append(el("span",{class:"chip"},w)); });
     if (s.q) g.append(el("span",{class:"muted small",style:"margin-left:6px"},"+ 의문 표정"));
     const strip = el("div",{class:"sent-pics"});
     s.g.forEach(w => { const sg = SW[w]; if (sg && sg[1].length) strip.append(el("figure",{}, pics(sg,"mini"), el("span",{},w))); });
