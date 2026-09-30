@@ -36,7 +36,9 @@ button,input,textarea,select{font:inherit;color:inherit}
 .muted{color:var(--muted)}
 .small{font-size:13px}
 
-header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+.levelcount{margin:0 4px 14px;font-size:14px;color:var(--muted)}
+.levelcount b{color:var(--ink);font-weight:600}
 .levels{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px;max-width:100%;overflow-x:auto;scrollbar-width:none}
 .levels button{border:0;background:transparent;padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;white-space:nowrap}
 .levels button[aria-selected="true"]{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.12)}
@@ -223,6 +225,7 @@ window.FIREBASE_CONFIG = {
     </div>
     <div class="levels" id="levelbar" role="tablist" aria-label="단계"></div>
   </header>
+  <div class="levelcount" id="levelcount" aria-live="polite"></div>
 
   <section id="basic">
     <nav class="sub" role="tablist" aria-label="학습 메뉴">
@@ -511,6 +514,9 @@ const hasContent = lv => lv==="c1" || wordsAt(lv).length > 0;
 function renderLevelBar(){
   $("levelbar").replaceChildren(...LEVELS.map(l => { const lk = isLocked(l.k);
     return el("button",{role:"tab", "aria-selected":String(level===l.k), class:lk?"locked":"", onclick:()=>setLevel(l.k)}, l.n + (lk?" 🔒":"")); }));
+  // 단계 바로 아래: 해당 단계 단어 수
+  const n = wordsAt(level).length;
+  $("levelcount").replaceChildren(`${LN[level]} · 단어 `, el("b",{}, `${n}개`));
 }
 function setLevel(l){
   level = l; try { localStorage.setItem("sueo-level", l); } catch(e){}
@@ -567,7 +573,7 @@ function renderToday(){
   $("pctbar").style.width = s.pct + "%";
   const open = b.pct >= GATE;
   $("gate").innerHTML = open ? "<b>중급1이 열렸습니다.</b> 위쪽 단계 버튼에서 선택하세요."
-    : `중급1은 초급 전체 진도 <b>${GATE}%</b>에서 열립니다. 지금 ${b.pct}% · 앞으로 <b>${Math.ceil(b.total*GATE/100) - b.done}개</b> 남았습니다.`;
+    : `중급은 초급 전체 진도 <b>${GATE}%</b>에서 열립니다. 지금 ${b.pct}% · 앞으로 <b>${Math.ceil(b.total*GATE/100) - b.done}개</b> 남았습니다.`;
   const rows = $("topicrows"); rows.replaceChildren();
   const lines = [...(level==="c1" ? [{n:"지문자·지숫자", d:s.kf, t:s.ft}] : []),
     ...topicsAt(level).map(t => ({n:t.n, d:t.w[level].filter(w => S.known[w]).length, t:t.w[level].length}))];
