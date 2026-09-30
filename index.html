@@ -83,6 +83,7 @@ a.chip:hover{background:var(--accent-soft)}
 .word details summary{cursor:pointer;font-size:13px;color:var(--muted)}
 .wsearch{width:100%;font-size:16px;padding:11px 14px;border-radius:12px;background:var(--surface)}
 .empty{grid-column:1/-1;text-align:center;padding:28px 12px}
+.dlg-link{grid-column:1/-1}
 
 /* 지문자 */
 .jamo{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
@@ -168,6 +169,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 </style>
 <script src="signs.js"></script>
 <script src="signs-extra.js"></script>
+<script src="dialogs.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
@@ -315,7 +317,9 @@ window.FIREBASE_CONFIG = {
     <div data-pane="sent" hidden>
       <div class="note-box" style="margin-bottom:14px">아래 문장은 한국어 문장과 그 안에 쓰이는 핵심 단어입니다. 수어 문장은 조사를 거의 쓰지 않고 표정(비수지 신호)이 함께 쓰이므로, 정확한 어순과 표정은 수어 선생님께 확인하세요.</div>
       <div class="panel" id="sentences"></div>
-      <h3 style="margin:22px 0 10px">대화 연습</h3>
+      <h3 style="margin:22px 0 4px">대화 연습</h3>
+      <p class="muted small" style="margin:0 0 10px">주제를 고르면 그 주제까지 배운 단어로 만든 대화가 나옵니다. A·B 역할을 나눠 손으로 먼저 해 보세요.</p>
+      <div class="topics" id="dlgfilter"></div>
       <div class="grid" id="dialogs"></div>
     </div>
 
@@ -403,50 +407,8 @@ const SENTS = [
   {k:"복습하고 반복해서 연습해요.", g:["복습","반복","연습하다"]},
   {k:"잘 보고 잘 들으세요.", g:["보다","듣다"]}
 ];
-// 주제별 대화: 그 주제까지 배운 단어로만 구성 (A/B 번갈아). "(지문자로 이름)"처럼 괄호는 그림 없는 안내
-const DIALOGS = {
-  greet: {title:"처음 만났을 때", lines:[
-    {k:"안녕하세요. 반갑습니다.", g:["안녕하세요","반갑다"]},
-    {k:"안녕하세요. 만나서 반갑습니다.", g:["안녕하세요","만나다","반갑다"]},
-    {k:"제 이름은 ○○입니다. 잘 부탁합니다.", g:["나","이름","(지문자로 이름)","부탁"]},
-    {k:"네, 감사합니다.", g:["네","감사합니다"]} ]},
-  q: {title:"이름 묻기", lines:[
-    {k:"이름이 뭐예요?", g:["너","이름","무엇"], q:true},
-    {k:"제 이름은 ○○예요. 당신은요?", g:["나","이름","(지문자로 이름)","너"], q:true},
-    {k:"저는 ○○예요. 반가워요.", g:["나","(지문자로 이름)","반갑다"]},
-    {k:"네, 좋아요.", g:["네","좋다"]} ]},
-  family: {title:"가족 소개", lines:[
-    {k:"가족이 몇 명이에요?", g:["가족","몇"], q:true},
-    {k:"아버지, 어머니, 동생이 있어요.", g:["아버지","어머니","동생"]},
-    {k:"형도 있어요?", g:["형"], q:true},
-    {k:"아니요, 누나가 있어요.", g:["아니요","누나"]} ]},
-  time: {title:"약속 잡기", lines:[
-    {k:"내일 시간 있어요?", g:["내일","시간"], q:true},
-    {k:"아침은 안 되고, 저녁은 괜찮아요.", g:["아침","아니요","저녁","괜찮다"]},
-    {k:"좋아요. 내일 저녁에 만나요.", g:["좋다","내일","저녁","만나다"]},
-    {k:"네, 내일 만나요.", g:["네","내일","만나다"]} ]},
-  school: {title:"학교 이야기", lines:[
-    {k:"오늘 학교에서 뭐 공부했어요?", g:["오늘","학교","무엇","공부"], q:true},
-    {k:"친구와 같이 공부했어요.", g:["친구","공부"]},
-    {k:"숙제 있어요?", g:["숙제"], q:true},
-    {k:"네, 내일 시험이에요.", g:["네","내일","시험"]} ]},
-  feel: {title:"기분 나누기", lines:[
-    {k:"오늘 기분이 어때요?", g:["오늘","기분","어떻게"], q:true},
-    {k:"피곤해요. 시험이 걱정돼요.", g:["피곤하다","시험","걱정"]},
-    {k:"괜찮아요. 친구가 있잖아요.", g:["괜찮다","친구"]},
-    {k:"고마워요. 기뻐요.", g:["감사합니다","기쁘다"]} ]},
-  life: {title:"길 묻고 도움 받기", lines:[
-    {k:"화장실이 어디예요?", g:["화장실","어디"], q:true},
-    {k:"미안해요, 잘 모르겠어요.", g:["미안합니다","모르다"]},
-    {k:"천천히 다시 말해 주세요.", g:["천천히","다시","말하다","부탁"]},
-    {k:"알겠어요. 제가 도와줄게요.", g:["알다","나","돕다"]},
-    {k:"감사합니다. 수어 공부가 재미있어요!", g:["감사합니다","수어","공부","재미있다"]} ]},
-  cmp: {title:"수어 공부 이야기", lines:[
-    {k:"수어 공부 어때요?", g:["수어","공부","어떻게"], q:true},
-    {k:"처음이라 어려워요.", g:["처음","어렵다"]},
-    {k:"천천히 반복하면 쉬워요.", g:["천천히","반복","쉽다"]},
-    {k:"정말 대단하네요!", g:["대단하다"]} ]}
-};
+// 주제별 대화는 dialogs.js 에 있습니다 (window.DIALOGS = { 주제키: [ {title, lines}, ... ] })
+const DIALOGS = window.DIALOGS || {};
 const SPELL_WORDS = ["사랑","서울","부산","학교","바다","나무","커피","김치","우유","하늘","친구","버스","컴퓨터","피아노","토끼","딸기","색깔"];
 const GATE = 70;
 
@@ -609,7 +571,8 @@ function renderWords(){
     if (q && !items.length) return;
     if (topicSel==="all" || q) box.append(el("div",{class:"topic-h"}, el("h3",{},t.n), el("span",{class:"muted small"},`${t.w.filter(w=>S.known[w]).length}/${t.w.length} 익힘`)));
     items.forEach(x => box.append(cardFor(x)));
-    if (!q){ const dc = dialogCard(t.k); if (dc) box.append(dc); }
+    const nd = (DIALOGS[t.k]||[]).length;
+    if (!q && nd) box.append(el("div",{class:"dlg-link"}, el("button",{class:"btn", onclick:()=>{ dlgSel=t.k; renderDialogs(); setTab("sent"); }}, `💬 ${t.n} 대화 연습 ${nd}개 보기`)));
   });
   if (q && !list.length) box.append(el("div",{class:"empty muted"}, hide ? "검색 결과가 없습니다. '익힌 단어 숨기기'를 끄면 더 나올 수 있어요." : "검색 결과가 없습니다. 다른 단어나 초성(예: ㄱㅈ)으로 찾아 보세요."));
 }
@@ -693,13 +656,12 @@ function picStrip(words){
   words.forEach(w => { const sg = SW[w]; if (sg && sg[1].length) strip.append(el("figure",{}, pics(sg,"mini"), el("span",{},w))); });
   return strip.childNodes.length ? strip : null;
 }
-function dialogCard(tk){
-  const d = DIALOGS[tk]; if (!d) return null;
+function dialogCard(d, tk, num){
   const t = TOPICS.find(x => x.k===tk);
   const box = el("div",{class:"dialog"});
   const used = [...new Set(d.lines.flatMap(l => l.g).filter(w => SW[w]))];
   const knownN = used.filter(w => S.known[w]).length;
-  box.append(el("div",{class:"dialog-h"}, el("b",{},"대화 연습 · "+d.title), el("span",{class:"muted small"}, `${t?t.n:""}까지 배운 단어 · 익힌 단어 ${knownN}/${used.length}`)));
+  box.append(el("div",{class:"dialog-h"}, el("b",{}, `${num}. ${d.title}`), el("span",{class:"muted small"}, `${t?t.n:""}까지 배운 단어 · 익힌 단어 ${knownN}/${used.length}`)));
   let shown = false;
   const body = el("div",{style:"display:grid;gap:12px"});
   const draw = () => {
@@ -712,13 +674,21 @@ function dialogCard(tk){
   };
   const btn = el("button",{class:"btn reveal", onclick:()=>{ shown=!shown; draw(); }});
   draw();
-  box.append(el("p",{class:"muted small",style:"margin:0"},"먼저 각 줄을 손으로 표현해 보고, 그다음 그림으로 확인하세요. 노란 테두리는 이미 익힌 단어입니다."), body, btn);
+  box.append(body, btn);
   return box;
+}
+let dlgSel = "greet";
+function renderDialogs(){
+  const f = $("dlgfilter"); f.replaceChildren();
+  TOPICS.forEach(t => { const n = (DIALOGS[t.k]||[]).length; if (n) f.append(el("button",{ "aria-pressed": dlgSel===t.k, onclick:()=>{ dlgSel=t.k; renderDialogs(); } }, `${t.n} ${n}`)); });
+  const dbox = $("dialogs");
+  dbox.replaceChildren(el("p",{class:"muted small",style:"margin:0"},"먼저 각 줄을 손으로 표현해 보고, 그다음 그림으로 확인하세요. 노란 테두리는 이미 익힌 단어입니다."),
+    ...(DIALOGS[dlgSel]||[]).map((d,i) => dialogCard(d, dlgSel, i+1)));
 }
 function renderSentences(){
   const box = $("sentences"); box.replaceChildren();
   SENTS.forEach(s => box.append(el("div",{class:"sent"}, el("div",{class:"k"},s.k), glossRow(s.g, s.q), picStrip(s.g))));
-  const dbox = $("dialogs"); dbox.replaceChildren(...TOPICS.map(t => dialogCard(t.k)).filter(Boolean));
+  renderDialogs();
 }
 
 /* ---------- journal ---------- */
