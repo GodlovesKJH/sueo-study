@@ -81,6 +81,8 @@ a.chip:hover{background:var(--accent-soft)}
 .check input{width:18px;height:18px;accent-color:var(--known)}
 .word textarea{width:100%;min-height:52px;resize:vertical;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:6px 8px;font-size:13px}
 .word details summary{cursor:pointer;font-size:13px;color:var(--muted)}
+.wsearch{width:100%;font-size:16px;padding:11px 14px;border-radius:12px;background:var(--surface)}
+.empty{grid-column:1/-1;text-align:center;padding:28px 12px}
 
 /* 지문자 */
 .jamo{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
@@ -90,7 +92,7 @@ a.chip:hover{background:var(--accent-soft)}
 .spell{font-family:var(--display);font-size:34px;letter-spacing:.2em}
 .spell-out{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .spell-out span{min-width:44px;padding:8px 10px;text-align:center;border-radius:10px;background:var(--accent-soft);font-family:var(--display);font-size:24px}
-input[type=text],input[type=date],input[type=number],textarea.j,select{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:8px 10px}
+input[type=text],input[type=search],input[type=date],input[type=number],textarea.j,select{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:8px 10px}
 
 /* 카드 */
 .card{min-height:260px;display:grid;place-items:center;text-align:center;gap:10px;padding:28px}
@@ -257,6 +259,9 @@ window.FIREBASE_CONFIG = {
 
     <div data-pane="words" hidden>
       <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
+      <div style="margin-bottom:12px">
+        <input type="search" id="wordSearch" class="wsearch" placeholder="단어 검색 (예: 안녕, 가족, ㄱㅈ)" autocomplete="off" enterkeyhint="search" aria-label="단어 검색">
+      </div>
       <div class="topics" id="topicfilter"></div>
       <div class="row" style="margin-bottom:12px;justify-content:space-between">
         <label class="check"><input type="checkbox" id="hideKnown"> 익힌 단어 숨기기</label>
@@ -555,10 +560,19 @@ function renderTopicFilter(){
   const f = $("topicfilter"); f.replaceChildren();
   [{k:"all",n:"전체"}, ...TOPICS].forEach(t => f.append(el("button",{ "aria-pressed": topicSel===t.k, onclick:()=>{topicSel=t.k; renderTopicFilter(); renderWords();} }, t.n)));
 }
+/* 검색: 단어·주제명·내 메모·사전 표제어, 그리고 초성(예: ㄱㅈ → 가족) */
+const choOf = s => [...s].map(ch => { const c = ch.charCodeAt(0) - 0xAC00; return (c>=0 && c<=11171) ? CHO[Math.floor(c/588)] : ch; }).join("");
+function matchWord(x, q){
+  const hit = s => typeof s === "string" && s.replace(/\s+/g,"").includes(q);
+  const sg = SW[x.w];
+  if (hit(x.w) || hit(x.tn) || hit(S.notes[x.w]) || hit(sg && sg[3])) return true;
+  return /^[ㄱ-ㅎ]+$/.test(q) && choOf(x.w.replace(/\s+/g,"")).includes(q);
+}
 function renderWords(){
   const hide = $("hideKnown").checked;
-  const list = ALLWORDS.filter(x => (topicSel==="all"||x.t===topicSel) && !(hide && S.known[x.w]));
-  $("wordcount").textContent = `${list.length}개 표시`;
+  const q = $("wordSearch").value.replace(/\s+/g,"");
+  const list = ALLWORDS.filter(x => (q ? matchWord(x,q) : (topicSel==="all"||x.t===topicSel)) && !(hide && S.known[x.w]));
+  $("wordcount").textContent = q ? `검색 결과 ${list.length}개` : `${list.length}개 표시`;
   const box = $("words"); box.replaceChildren();
   const cardFor = x => {
     const cb = el("input",{type:"checkbox", id:"k-"+x.w}); cb.checked = !!S.known[x.w];
@@ -576,14 +590,17 @@ function renderWords(){
     );
     return card;
   };
-  TOPICS.filter(t => topicSel==="all" || t.k===topicSel).forEach(t => {
+  TOPICS.filter(t => q || topicSel==="all" || t.k===topicSel).forEach(t => {
     const items = list.filter(x => x.t===t.k);
-    if (topicSel==="all") box.append(el("div",{class:"topic-h"}, el("h3",{},t.n), el("span",{class:"muted small"},`${t.w.filter(w=>S.known[w]).length}/${t.w.length} 익힘`)));
+    if (q && !items.length) return;
+    if (topicSel==="all" || q) box.append(el("div",{class:"topic-h"}, el("h3",{},t.n), el("span",{class:"muted small"},`${t.w.filter(w=>S.known[w]).length}/${t.w.length} 익힘`)));
     items.forEach(x => box.append(cardFor(x)));
-    box.append(dialogCard(t.k));
+    if (!q) box.append(dialogCard(t.k));
   });
+  if (q && !list.length) box.append(el("div",{class:"empty muted"}, hide ? "검색 결과가 없습니다. '익힌 단어 숨기기'를 끄면 더 나올 수 있어요." : "검색 결과가 없습니다. 다른 단어나 초성(예: ㄱㅈ)으로 찾아 보세요."));
 }
 $("hideKnown").onchange = renderWords;
+$("wordSearch").addEventListener("input", renderWords);
 
 /* ---------- fingerspelling ---------- */
 function renderFinger(){
