@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>나의 수어 공부방</title>
-<meta name="description" content="한국수어 기초 단어·지문자·카드 복습·학습 일지">
+<meta name="description" content="한국수어 단계별 단어·지문자·카드 복습·학습 일지">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -37,10 +37,11 @@ button,input,textarea,select{font:inherit;color:inherit}
 .small{font-size:13px}
 
 header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
-.levels{display:flex;gap:6px;background:var(--sunk);padding:4px;border-radius:12px}
-.levels button{border:0;background:transparent;padding:8px 16px;border-radius:9px;cursor:pointer;font-weight:600}
+.levels{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.levels button{border:0;background:transparent;padding:8px 14px;border-radius:9px;cursor:pointer;font-weight:600;white-space:nowrap}
 .levels button[aria-selected="true"]{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .levels button.locked{color:var(--lock)}
+@media (max-width:520px){.levels button{padding:8px 9px;font-size:14px}}
 nav.sub{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:22px;scrollbar-width:none}
 nav.sub button{border:0;background:none;padding:10px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent;font-weight:500}
 nav.sub button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -84,6 +85,7 @@ a.chip:hover{background:var(--accent-soft)}
 .wsearch{width:100%;font-size:16px;padding:11px 14px;border-radius:12px;background:var(--surface)}
 .empty{grid-column:1/-1;text-align:center;padding:28px 12px}
 .dlg-link{grid-column:1/-1}
+.syn{font-size:12px;color:var(--muted)}
 
 /* 지문자 */
 .jamo{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px}
@@ -117,7 +119,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 .jitem .d{font-family:var(--mono);font-size:13px;color:var(--muted)}
 .jitem .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:13px}
 
-/* 중급 */
+/* 잠김·준비 중 */
 .locked-box{display:grid;gap:14px}
 .plan{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
 .plan .panel{padding:14px}
@@ -167,6 +169,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 .userbar{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 .userbar button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-size:13px}
 </style>
+<script src="vocab.js"></script>
 <script src="signs.js"></script>
 <script src="signs-extra.js"></script>
 <script src="dialogs.js"></script>
@@ -218,14 +221,11 @@ window.FIREBASE_CONFIG = {
       <div class="muted small">한국수어 · 그림과 설명은 국립국어원 한국수어사전 자료입니다 <span class="sync" id="sync"></span></div>
       <div class="userbar"><span id="who"></span><button type="button" id="logout">로그아웃</button></div>
     </div>
-    <div class="levels" role="tablist" aria-label="단계">
-      <button role="tab" id="lv-basic" aria-selected="true">기초</button>
-      <button role="tab" id="lv-mid" aria-selected="false" class="locked">중급 🔒</button>
-    </div>
+    <div class="levels" id="levelbar" role="tablist" aria-label="단계"></div>
   </header>
 
   <section id="basic">
-    <nav class="sub" role="tablist" aria-label="기초 메뉴">
+    <nav class="sub" role="tablist" aria-label="학습 메뉴">
       <button data-tab="today" aria-selected="true">오늘</button>
       <button data-tab="words">단어장</button>
       <button data-tab="finger">지문자·지숫자</button>
@@ -237,7 +237,7 @@ window.FIREBASE_CONFIG = {
     <div data-pane="today">
       <div class="hero">
         <div class="panel">
-          <div class="muted small">기초 진도</div>
+          <div class="muted small" id="pctlabel">초급1 진도</div>
           <div class="row" style="align-items:baseline;gap:8px;margin:6px 0 10px"><span class="big" id="pct">0%</span><span class="muted" id="pctsub"></span></div>
           <div class="bar"><i id="pctbar" style="width:0%"></i></div>
           <div class="gate" id="gate"></div>
@@ -256,14 +256,14 @@ window.FIREBASE_CONFIG = {
         <div class="topicrows" id="topicrows"></div>
       </div>
       <div class="note-box" style="margin-top:16px">
-        공부 순서 제안: <b>지문자</b>로 손모양에 익숙해지기 → <b>인사·기본</b>, <b>의문사</b> 단어 → 짧은 <b>문장</b>과 <b>대화</b>로 묶어 보기 → 카드로 매일 복습. 그림을 본 뒤 기억할 요령은 단어 카드의 <b>메모</b>에 직접 적어 두세요.
+        공부 순서 제안: <b>지문자</b>로 손모양에 익숙해지기 → 단계별 <b>단어</b> → 짧은 <b>문장</b>과 <b>대화</b>로 묶어 보기 → 카드로 매일 복습. 그림을 본 뒤 기억할 요령은 단어 카드의 <b>메모</b>에 직접 적어 두세요. 단어 검색은 모든 단계에서 찾아 줍니다.
       </div>
     </div>
 
     <div data-pane="words" hidden>
       <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
       <div style="margin-bottom:12px">
-        <input type="search" id="wordSearch" class="wsearch" placeholder="단어 검색 (예: 안녕, 가족, ㄱㅈ)" autocomplete="off" enterkeyhint="search" aria-label="단어 검색">
+        <input type="search" id="wordSearch" class="wsearch" placeholder="단어 검색 — 모든 단계 (예: 안녕, 가족, ㄱㅈ)" autocomplete="off" enterkeyhint="search" aria-label="단어 검색">
       </div>
       <div class="topics" id="topicfilter"></div>
       <div class="row" style="margin-bottom:12px;justify-content:space-between">
@@ -274,7 +274,7 @@ window.FIREBASE_CONFIG = {
     </div>
 
     <div data-pane="finger" hidden>
-      <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
+      <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다. 지문자·지숫자 진도는 초급1에 포함됩니다.</div>
       <div class="grid">
         <div class="panel">
           <h3 style="margin-bottom:10px">지문자 · 자음</h3>
@@ -307,6 +307,7 @@ window.FIREBASE_CONFIG = {
           <label for="cardTopic" class="small muted">주제</label>
           <select id="cardTopic"></select>
           <label class="check"><input type="checkbox" id="cardUnknown" checked> 아직 못 익힌 단어만</label>
+          <label class="check"><input type="checkbox" id="cardPrev"> 이전 단계도 포함</label>
         </div>
         <span class="muted small" id="cardPos"></span>
       </div>
@@ -315,10 +316,10 @@ window.FIREBASE_CONFIG = {
     </div>
 
     <div data-pane="sent" hidden>
-      <div class="note-box" style="margin-bottom:14px">아래 문장은 한국어 문장과 그 안에 쓰이는 핵심 단어입니다. 수어 문장은 조사를 거의 쓰지 않고 표정(비수지 신호)이 함께 쓰이므로, 정확한 어순과 표정은 수어 선생님께 확인하세요.</div>
+      <div class="note-box" style="margin-bottom:14px">아래 문장은 한국어 문장과 그 안에 쓰이는 핵심 단어입니다. 이 단계에서 새로 나오는 단어가 들어간 문장·대화만 모아 보여 줍니다. 수어 문장은 조사를 거의 쓰지 않고 표정(비수지 신호)이 함께 쓰이므로, 정확한 어순과 표정은 수어 선생님께 확인하세요.</div>
       <div class="panel" id="sentences"></div>
       <h3 style="margin:22px 0 4px">대화 연습</h3>
-      <p class="muted small" style="margin:0 0 10px">주제를 고르면 그 주제까지 배운 단어로 만든 대화가 나옵니다. A·B 역할을 나눠 손으로 먼저 해 보세요.</p>
+      <p class="muted small" style="margin:0 0 10px">주제를 고르면 그 단계까지 배운 단어로 만든 대화가 나옵니다. A·B 역할을 나눠 손으로 먼저 해 보세요.</p>
       <div class="topics" id="dlgfilter"></div>
       <div class="grid" id="dialogs"></div>
     </div>
@@ -340,18 +341,20 @@ window.FIREBASE_CONFIG = {
   <section id="mid" hidden>
     <div class="locked-box">
       <div class="panel">
-        <h2 id="midTitle">중급은 기초 진도 70%부터 열립니다</h2>
+        <h2 id="midTitle"></h2>
         <p class="muted" id="midSub" style="margin:6px 0 12px"></p>
-        <div class="bar"><i id="midbar" style="width:0%"></i></div>
+        <div class="bar" id="midbarwrap"><i id="midbar" style="width:0%"></i></div>
       </div>
-      <h3>중급에서 다룰 내용 (예정)</h3>
-      <div class="plan">
-        <div class="panel"><h3>비수지 신호</h3><p class="muted small" style="margin:0">표정, 눈썹, 입모양, 고개 움직임으로 의문·부정·강조를 나타내는 법</p></div>
-        <div class="panel"><h3>공간 활용</h3><p class="muted small" style="margin:0">사람과 사물을 공간에 두고 가리키며 이야기를 이어 가는 법</p></div>
-        <div class="panel"><h3>분류사(묘사 표현)</h3><p class="muted small" style="margin:0">모양, 크기, 움직임을 손으로 그려 보이는 표현</p></div>
-        <div class="panel"><h3>대화 연습</h3><p class="muted small" style="margin:0">자기소개, 길 묻기, 병원·학교 상황 등 주고받는 대화</p></div>
-        <div class="panel"><h3>주제 확장 단어</h3><p class="muted small" style="margin:0">날씨, 교통, 음식, 직업, 취미 등 300단어 이상</p></div>
-        <div class="panel"><h3>농문화 이해</h3><p class="muted small" style="margin:0">농인 공동체의 문화와 예절, 한국수어의 역사</p></div>
+      <div id="plan" hidden>
+        <h3 style="margin-bottom:10px">중급에서 다룰 내용 (예정)</h3>
+        <div class="plan">
+          <div class="panel"><h3>비수지 신호</h3><p class="muted small" style="margin:0">표정, 눈썹, 입모양, 고개 움직임으로 의문·부정·강조를 나타내는 법</p></div>
+          <div class="panel"><h3>공간 활용</h3><p class="muted small" style="margin:0">사람과 사물을 공간에 두고 가리키며 이야기를 이어 가는 법</p></div>
+          <div class="panel"><h3>분류사(묘사 표현)</h3><p class="muted small" style="margin:0">모양, 크기, 움직임을 손으로 그려 보이는 표현</p></div>
+          <div class="panel"><h3>대화 연습</h3><p class="muted small" style="margin:0">자기소개, 길 묻기, 병원·학교 상황 등 주고받는 대화</p></div>
+          <div class="panel"><h3>주제 확장 단어</h3><p class="muted small" style="margin:0">날씨, 교통, 음식, 직업, 취미 등 300단어 이상</p></div>
+          <div class="panel"><h3>농문화 이해</h3><p class="muted small" style="margin:0">농인 공동체의 문화와 예절, 한국수어의 역사</p></div>
+        </div>
       </div>
     </div>
   </section>
@@ -371,21 +374,20 @@ function pics(entry, cls=""){
   return box;
 }
 
-const TOPICS = [
-  {k:"greet", n:"인사·기본", w:["안녕하세요","감사합니다","미안합니다","괜찮다","네","아니요","만나다","반갑다","이름","나","너","좋다","싫다","잘 가","수고하다","부탁"]},
-  {k:"q", n:"의문사", w:["누구","무엇","어디","언제","왜","어떻게","얼마","몇"]},
-  {k:"family", n:"가족", w:["가족","아버지","어머니","할아버지","할머니","형","오빠","누나","언니","동생","아들","딸","남편","아내"]},
-  {k:"time", n:"때·시간", w:["오늘","어제","내일","아침","낮","저녁","시간","주일","월","년","지금","나중","처음"]},
-  {k:"school", n:"학교", w:["학교","선생님","학생","공부","친구","책","질문","교실","숙제","시험","배우다","가르치다","반(학급)","기초","연습하다","복습","반복"]},
-  {k:"feel", n:"감정·상태", w:["기쁘다","슬프다","화나다","무섭다","피곤하다","아프다","배고프다","사랑","행복","걱정","기분","재미있다"]},
-  {k:"life", n:"생활·동작", w:["집안","쌀밥","물","화장실","병원","가다","오다","먹다","자다","알다","모르다","돕다","천천히","다시","말하다","수어","보다","듣다","살다","빨리","커피","스타벅스"]},
-  {k:"cmp", n:"비교·정도", w:["같다","다르다","어렵다","쉽다","대단하다"]}
-];
-const ALLWORDS = TOPICS.flatMap(t => t.w.map(w => ({w, t:t.k, tn:t.n})));
+/* ---------- 단계·주제·단어 (vocab.js) ---------- */
+const LEVELS = window.LEVELS || [], LV = LEVELS.map(l => l.k), LN = Object.fromEntries(LEVELS.map(l => [l.k, l.n]));
+const li = k => LV.indexOf(k);
+const TOPICS = (window.TOPICS || []).map(t => ({k:t.k, n:t.n, w:t.w, all: LV.flatMap(l => t.w[l] || [])}));
+const ALLWORDS = TOPICS.flatMap(t => LV.flatMap(l => (t.w[l] || []).map(w => ({w, t:t.k, tn:t.n, lv:l}))));
+const WLV = Object.fromEntries(ALLWORDS.map(x => [x.w, x.lv]));
+const glvl = words => words.reduce((m, w) => (w in WLV) ? Math.max(m, li(WLV[w])) : m, 0);
+const wordsAt = lv => ALLWORDS.filter(x => x.lv === lv);
+const topicsAt = lv => TOPICS.filter(t => (t.w[lv] || []).length);
 
 const CONS = ["ㄱ","ㄴ","ㄷ","ㄹ","ㅁ","ㅂ","ㅅ","ㅇ","ㅈ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ","ㄲ","ㄸ","ㅃ","ㅆ","ㅉ"];
 const VOWS = ["ㅏ","ㅑ","ㅓ","ㅕ","ㅗ","ㅛ","ㅜ","ㅠ","ㅡ","ㅣ","ㅐ","ㅒ","ㅔ","ㅖ","ㅚ","ㅟ","ㅢ"];
 const NUMS = ["1","2","3","4","5","6","7","8","9","10","100","1000","10000"];
+const FSTOTAL = CONS.length + VOWS.length + NUMS.length;
 
 const SENTS = [
   {k:"안녕하세요. 만나서 반갑습니다.", g:["안녕하세요","만나다","반갑다"]},
@@ -409,6 +411,7 @@ const SENTS = [
 ];
 // 주제별 대화는 dialogs.js 에 있습니다 (window.DIALOGS = { 주제키: [ {title, lines}, ... ] })
 const DIALOGS = window.DIALOGS || {};
+const dlgAt = (lv, tk) => (DIALOGS[tk] || []).filter(d => glvl(d.lines.flatMap(l => l.g)) === li(lv));
 const SPELL_WORDS = ["사랑","서울","부산","학교","바다","나무","커피","김치","우유","하늘","친구","버스","컴퓨터","피아노","토끼","딸기","색깔"];
 const GATE = 70;
 
@@ -416,6 +419,8 @@ const GATE = 70;
 let S = {known:{}, notes:{}, fs:{}};
 let J = []; // journal
 let ref = null, user = null, saving = false, dirty = false, saveTimer = null;
+let level = "c1", topicSel = "all", dlgSel = "", curTab = "today";
+try { const sv = localStorage.getItem("sueo-level"); if (LV.includes(sv)) level = sv; } catch(e){}
 const USER_KEY = "sueo-user";
 const cacheKey = () => "sueo-v1-" + (user ? user.phone : "guest");
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)||"null"); } catch(e){ return null; } };
@@ -474,26 +479,77 @@ const $ = id => document.getElementById(id);
 const el = (tag, attrs={}, ...kids) => { const e = document.createElement(tag);
   for (const [k,v] of Object.entries(attrs)){ if (k==="class") e.className=v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else if (v!==false && v!=null) e.setAttribute(k, v===true?"":v); }
   for (const c of kids.flat()) if (c!=null) e.append(c.nodeType?c:document.createTextNode(c)); return e; };
-
-function stats(){
-  const kw = ALLWORDS.filter(x => S.known[x.w]).length;
-  const fsTotal = CONS.length + VOWS.length + NUMS.length;
-  const kf = Object.keys(S.fs).filter(k => S.fs[k]).length;
-  const total = ALLWORDS.length + fsTotal, done = kw + kf;
-  return {kw, kf, fsTotal, total, done, pct: Math.round(done/total*100)};
+// 같은 수형으로 쓰는 다른 말(사전 표제어)
+function synOf(w){
+  const sg = SW[w]; if (!sg || typeof sg[3] !== "string") return "";
+  const base = w.replace(/\(.*\)/,"").replace("~고 ","");
+  const s = sg[3].split(",").map(x => x.trim()).filter(x => x && x!==w && x!==base && !x.startsWith("-")).slice(0,6);
+  return s.length ? "같은 수형: " + s.join(", ") : "";
 }
 
-/* ---------- level tabs ---------- */
-let level = "basic";
+/* ---------- 진도·잠금 ---------- */
+function levelStats(lv){
+  const ws = wordsAt(lv), kw = ws.filter(x => S.known[x.w]).length;
+  const kf = lv==="c1" ? Object.keys(S.fs).filter(k => S.fs[k]).length : 0;
+  const ft = lv==="c1" ? FSTOTAL : 0;
+  const total = ws.length + ft, done = kw + kf;
+  return {nw:ws.length, kw, kf, ft, total, done, pct: total ? Math.round(done/total*100) : 0};
+}
+function basicStats(){
+  const a = ["c1","c2","c3"].map(levelStats);
+  const total = a.reduce((s,x) => s+x.total, 0), done = a.reduce((s,x) => s+x.done, 0);
+  return {total, done, pct: total ? Math.round(done/total*100) : 0};
+}
+// 초급1~3은 항상 열림 · 중급1은 초급 전체 70% · 중급2는 중급1 70%
+function isLocked(lv){
+  if (lv==="m1") return basicStats().pct < GATE;
+  if (lv==="m2") { const s = levelStats("m1"); return !(s.total > 0 && s.pct >= GATE); }
+  return false;
+}
+const hasContent = lv => lv==="c1" || wordsAt(lv).length > 0;
+
+function renderLevelBar(){
+  $("levelbar").replaceChildren(...LEVELS.map(l => { const lk = isLocked(l.k);
+    return el("button",{role:"tab", "aria-selected":String(level===l.k), class:lk?"locked":"", onclick:()=>setLevel(l.k)}, l.n + (lk?" 🔒":"")); }));
+}
 function setLevel(l){
-  level = l; $("lv-basic").setAttribute("aria-selected", l==="basic"); $("lv-mid").setAttribute("aria-selected", l==="mid");
-  $("basic").hidden = l!=="basic"; $("mid").hidden = l!=="mid";
+  level = l; try { localStorage.setItem("sueo-level", l); } catch(e){}
+  renderLevelBar(); applyLevel();
 }
-$("lv-basic").onclick = () => setLevel("basic");
-$("lv-mid").onclick = () => setLevel("mid");
+function renderMid(){
+  const n = LN[level], isMid = level.startsWith("m");
+  $("plan").hidden = !isMid;
+  if (isLocked(level)){
+    $("midbarwrap").hidden = false;
+    if (level==="m1"){ const b = basicStats();
+      $("midTitle").textContent = `${n}은 초급 진도 ${GATE}%부터 열립니다`;
+      $("midSub").textContent = `지금 초급 전체 ${b.pct}% · 초급 단어와 지문자를 익히면 진도가 올라갑니다.`;
+      $("midbar").style.width = Math.min(100, b.pct/GATE*100) + "%";
+    } else { const s = levelStats("m1");
+      $("midTitle").textContent = `${n}는 중급1 진도 ${GATE}%부터 열립니다`;
+      $("midSub").textContent = s.total ? `지금 중급1 ${s.pct}%` : "중급1 단어가 등록되면 진행할 수 있습니다.";
+      $("midbar").style.width = Math.min(100, s.pct/GATE*100) + "%";
+    }
+  } else {
+    $("midbarwrap").hidden = true;
+    $("midTitle").textContent = `${n} 준비 중`;
+    $("midSub").textContent = "아직 등록된 단어가 없습니다. 단어가 추가되면 여기에 나타납니다.";
+  }
+}
+function applyLevel(){
+  const show = !isLocked(level) && hasContent(level);
+  $("basic").hidden = !show; $("mid").hidden = show;
+  if (!show){ renderMid(); return; }
+  if (topicSel!=="all" && !topicsAt(level).some(t => t.k===topicSel)) topicSel = "all";
+  const withDlg = TOPICS.filter(t => dlgAt(level, t.k).length);
+  if (!withDlg.some(t => t.k===dlgSel)) dlgSel = withDlg.length ? withDlg[0].k : "";
+  fillCardTopic(); renderToday(); renderTopicFilter(); renderWords(); renderSentences();
+  if (curTab==="cards") buildDeck();
+}
 
 /* ---------- sub tabs ---------- */
 function setTab(t){
+  curTab = t;
   document.querySelectorAll("nav.sub button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===t));
   document.querySelectorAll("[data-pane]").forEach(p => p.hidden = p.dataset.pane!==t);
   try { localStorage.setItem("sueo-tab", t); } catch(e){}
@@ -504,23 +560,18 @@ document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => setTab(b.d
 
 /* ---------- today ---------- */
 function renderToday(){
-  const s = stats();
+  const s = levelStats(level), b = basicStats();
+  $("pctlabel").textContent = `${LN[level]} 진도`;
   $("pct").textContent = s.pct + "%";
-  $("pctsub").textContent = `단어 ${s.kw}/${ALLWORDS.length} · 지문자·지숫자 ${s.kf}/${s.fsTotal}`;
+  $("pctsub").textContent = s.ft ? `단어 ${s.kw}/${s.nw} · 지문자·지숫자 ${s.kf}/${s.ft}` : `단어 ${s.kw}/${s.nw}`;
   $("pctbar").style.width = s.pct + "%";
-  const open = s.pct >= GATE;
-  $("gate").innerHTML = open ? "<b>중급이 열렸습니다.</b> 위쪽 중급 탭에서 다음 단계 계획을 확인하세요."
-    : `중급은 기초 진도 <b>${GATE}%</b>에서 열립니다. 앞으로 <b>${Math.ceil(s.total*GATE/100) - s.done}개</b> 남았습니다.`;
-  $("lv-mid").textContent = open ? "중급" : "중급 🔒"; $("lv-mid").classList.toggle("locked", !open);
-  $("midTitle").textContent = open ? "중급 준비 완료" : `중급은 기초 진도 ${GATE}%부터 열립니다`;
-  $("midSub").textContent = open ? "기초를 충분히 익혔습니다. 중급 내용은 준비 중입니다." : `지금 ${s.pct}% · 기초 단어와 지문자를 익히면 진도가 올라갑니다.`;
-  $("midbar").style.width = Math.min(100, s.pct/GATE*100) + "%";
-
+  const open = b.pct >= GATE;
+  $("gate").innerHTML = open ? "<b>중급1이 열렸습니다.</b> 위쪽 단계 버튼에서 선택하세요."
+    : `중급1은 초급 전체 진도 <b>${GATE}%</b>에서 열립니다. 지금 ${b.pct}% · 앞으로 <b>${Math.ceil(b.total*GATE/100) - b.done}개</b> 남았습니다.`;
   const rows = $("topicrows"); rows.replaceChildren();
-  const fsDone = s.kf;
-  const lines = [{n:"지문자·지숫자", d:fsDone, t:s.fsTotal}, ...TOPICS.map(t => ({n:t.n, d:t.w.filter(w=>S.known[w]).length, t:t.w.length}))];
+  const lines = [...(level==="c1" ? [{n:"지문자·지숫자", d:s.kf, t:s.ft}] : []),
+    ...topicsAt(level).map(t => ({n:t.n, d:t.w[level].filter(w => S.known[w]).length, t:t.w[level].length}))];
   lines.forEach(l => rows.append(el("div",{class:"topicrow"}, el("b",{},l.n), el("div",{class:"bar"}, el("i",{style:`width:${l.d/l.t*100}%`})), el("span",{},`${l.d}/${l.t}`))));
-
   const todo = $("todo"); todo.replaceChildren();
   const next = lines.find(l => l.d < l.t);
   const today = new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
@@ -528,15 +579,15 @@ function renderToday(){
   if (next) todo.append(el("li",{}, `${next.n}: 새로 ${Math.min(5, next.t-next.d)}개 익히기`));
   todo.append(el("li",{}, `카드 복습 10장`));
   todo.append(el("li",{}, wroteToday ? "학습 일지 작성 완료 ✓" : "학습 일지 한 줄 남기기"));
+  renderLevelBar();
 }
 
 /* ---------- words ---------- */
-let topicSel = "all";
 function renderTopicFilter(){
   const f = $("topicfilter"); f.replaceChildren();
-  [{k:"all",n:"전체"}, ...TOPICS].forEach(t => f.append(el("button",{ "aria-pressed": topicSel===t.k, onclick:()=>{topicSel=t.k; renderTopicFilter(); renderWords();} }, t.n)));
+  [{k:"all",n:"전체"}, ...topicsAt(level)].forEach(t => f.append(el("button",{ "aria-pressed": String(topicSel===t.k), onclick:()=>{topicSel=t.k; renderTopicFilter(); renderWords();} }, t.n)));
 }
-/* 검색: 단어·주제명·내 메모·사전 표제어, 그리고 초성(예: ㄱㅈ → 가족) */
+/* 검색: 모든 단계에서 단어·주제명·내 메모·사전 표제어, 그리고 초성(예: ㄱㅈ → 가족) */
 const choOf = s => [...s].map(ch => { const c = ch.charCodeAt(0) - 0xAC00; return (c>=0 && c<=11171) ? CHO[Math.floor(c/588)] : ch; }).join("");
 function matchWord(x, q){
   const hit = s => typeof s === "string" && s.replace(/\s+/g,"").includes(q);
@@ -547,8 +598,8 @@ function matchWord(x, q){
 function renderWords(){
   const hide = $("hideKnown").checked;
   const q = $("wordSearch").value.replace(/\s+/g,"");
-  const list = ALLWORDS.filter(x => (q ? matchWord(x,q) : (topicSel==="all"||x.t===topicSel)) && !(hide && S.known[x.w]));
-  $("wordcount").textContent = q ? `검색 결과 ${list.length}개` : `${list.length}개 표시`;
+  const list = ALLWORDS.filter(x => (q ? matchWord(x,q) : (x.lv===level && (topicSel==="all"||x.t===topicSel))) && !(hide && S.known[x.w]));
+  $("wordcount").textContent = q ? `검색 결과 ${list.length}개 (모든 단계)` : `${LN[level]} ${list.length}개 표시`;
   const box = $("words"); box.replaceChildren();
   const cardFor = x => {
     const cb = el("input",{type:"checkbox", id:"k-"+x.w}); cb.checked = !!S.known[x.w];
@@ -556,10 +607,11 @@ function renderWords(){
     cb.onchange = () => { if (cb.checked) S.known[x.w]=true; else delete S.known[x.w]; card.classList.toggle("is-known", cb.checked); scheduleSave(); renderToday(); };
     const ta = el("textarea",{id:"n-"+x.w, placeholder:"그림을 보고 기억할 요령 (예: 손모양, 움직임 방향)"}); ta.value = S.notes[x.w]||"";
     ta.oninput = () => { if (ta.value.trim()) S.notes[x.w]=ta.value; else delete S.notes[x.w]; scheduleSave(); };
-    const sg = SW[x.w];
+    const sg = SW[x.w], syn = synOf(x.w);
     card.append(
-      el("div",{class:"row",style:"justify-content:space-between"}, el("span",{class:"w"},x.w), el("span",{class:"muted small"},x.tn)),
+      el("div",{class:"row",style:"justify-content:space-between"}, el("span",{class:"w"},x.w), el("span",{class:"muted small"}, q ? `${x.tn} · ${LN[x.lv]}` : x.tn)),
       pics(sg),
+      syn ? el("div",{class:"syn"}, syn) : null,
       sg ? el("div",{class:"desc"}, sg[2]) : el("div",{class:"desc"}, NOSIGN),
       el("div",{class:"acts"}, el("span"), el("label",{class:"check"}, cb, "익힘")),
       el("details",{open: S.notes[x.w]?true:false}, el("summary",{}, S.notes[x.w]?"내 메모":"메모 추가"), ta)
@@ -568,13 +620,14 @@ function renderWords(){
   };
   TOPICS.filter(t => q || topicSel==="all" || t.k===topicSel).forEach(t => {
     const items = list.filter(x => x.t===t.k);
-    if (q && !items.length) return;
-    if (topicSel==="all" || q) box.append(el("div",{class:"topic-h"}, el("h3",{},t.n), el("span",{class:"muted small"},`${t.w.filter(w=>S.known[w]).length}/${t.w.length} 익힘`)));
+    if (!items.length) return;
+    if (topicSel==="all" || q){ const pool = q ? t.all : (t.w[level]||[]);
+      box.append(el("div",{class:"topic-h"}, el("h3",{},t.n), el("span",{class:"muted small"},`${pool.filter(w=>S.known[w]).length}/${pool.length} 익힘`))); }
     items.forEach(x => box.append(cardFor(x)));
-    const nd = (DIALOGS[t.k]||[]).length;
+    const nd = dlgAt(level, t.k).length;
     if (!q && nd) box.append(el("div",{class:"dlg-link"}, el("button",{class:"btn", onclick:()=>{ dlgSel=t.k; renderDialogs(); setTab("sent"); }}, `💬 ${t.n} 대화 연습 ${nd}개 보기`)));
   });
-  if (q && !list.length) box.append(el("div",{class:"empty muted"}, hide ? "검색 결과가 없습니다. '익힌 단어 숨기기'를 끄면 더 나올 수 있어요." : "검색 결과가 없습니다. 다른 단어나 초성(예: ㄱㅈ)으로 찾아 보세요."));
+  if (!list.length) box.append(el("div",{class:"empty muted"}, q ? (hide ? "검색 결과가 없습니다. '익힌 단어 숨기기'를 끄면 더 나올 수 있어요." : "검색 결과가 없습니다. 다른 단어나 초성(예: ㄱㅈ)으로 찾아 보세요.") : (hide ? "이 주제는 모두 익혔습니다. '익힌 단어 숨기기'를 끄면 다시 볼 수 있어요." : "이 단계에 등록된 단어가 없습니다.")));
 }
 $("hideKnown").onchange = renderWords;
 $("wordSearch").addEventListener("input", renderWords);
@@ -583,9 +636,9 @@ $("wordSearch").addEventListener("input", renderWords);
 function renderFinger(){
   const mk = (box, arr, pre) => { box.replaceChildren(); arr.forEach(c => {
     const id = pre+c, sg = SF[id];
-    const b = el("button",{class:S.fs[id]?"is-known":"", "aria-pressed":!!S.fs[id], title:(sg?sg[2]+"\n":"")+"눌러서 익힘 표시"},
+    const b = el("button",{class:S.fs[id]?"is-known":"", "aria-pressed":String(!!S.fs[id]), title:(sg?sg[2]+"\n":"")+"눌러서 익힘 표시"},
       sg && sg[1][0] ? el("img",{src:IMGB+sg[1][0], alt:c+" 수형 그림", loading:"lazy", referrerpolicy:"no-referrer"}) : null, c);
-    b.onclick = () => { if (S.fs[id]) delete S.fs[id]; else S.fs[id]=true; b.classList.toggle("is-known", !!S.fs[id]); b.setAttribute("aria-pressed", !!S.fs[id]); scheduleSave(); renderToday(); };
+    b.onclick = () => { if (S.fs[id]) delete S.fs[id]; else S.fs[id]=true; b.classList.toggle("is-known", !!S.fs[id]); b.setAttribute("aria-pressed", String(!!S.fs[id])); scheduleSave(); renderToday(); };
     box.append(b); }); };
   mk($("jamoC"), CONS, "c:"); mk($("jamoV"), VOWS, "v:"); mk($("nums"), NUMS, "n:");
   ["jamoC","jamoV","nums"].forEach(id => $(id).classList.add("pic"));
@@ -613,26 +666,32 @@ $("spellIn").addEventListener("keydown", e => { if (e.key==="Enter") $("spellSho
 
 /* ---------- cards ---------- */
 let deck = [], pos = 0, revealed = false;
-function fillCardTopic(){ const s = $("cardTopic"); s.replaceChildren(el("option",{value:"all"},"전체"), ...TOPICS.map(t => el("option",{value:t.k},t.n))); }
+const inScope = x => $("cardPrev").checked ? li(x.lv) <= li(level) : x.lv === level;
+function fillCardTopic(){
+  const s = $("cardTopic"), prev = s.value;
+  const ts = TOPICS.filter(t => ALLWORDS.some(x => x.t===t.k && inScope(x)));
+  s.replaceChildren(el("option",{value:"all"},"전체"), ...ts.map(t => el("option",{value:t.k},t.n)));
+  s.value = ts.some(t => t.k===prev) ? prev : "all";
+}
 function buildDeck(){
   const t = $("cardTopic").value, onlyU = $("cardUnknown").checked;
-  deck = ALLWORDS.filter(x => (t==="all"||x.t===t) && !(onlyU && S.known[x.w]));
+  deck = ALLWORDS.filter(x => inScope(x) && (t==="all"||x.t===t) && !(onlyU && S.known[x.w]));
   for (let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; }
   pos = 0; revealed = false; renderCard();
 }
 function renderCard(){
   const c = $("card"); c.replaceChildren();
-  if (!deck.length){ c.append(el("div",{}, el("h3",{},"이 주제는 모두 익혔습니다"), el("p",{class:"muted"},"'아직 못 익힌 단어만'을 끄면 전체 복습을 할 수 있습니다."))); $("cardPos").textContent=""; return; }
+  if (!deck.length){ c.append(el("div",{}, el("h3",{},"이 범위는 모두 익혔습니다"), el("p",{class:"muted"},"'아직 못 익힌 단어만'을 끄거나 '이전 단계도 포함'을 켜면 더 복습할 수 있습니다."))); $("cardPos").textContent=""; return; }
   if (pos >= deck.length){ c.append(el("div",{}, el("h3",{},"한 바퀴 끝!"), el("p",{class:"muted"},`${deck.length}장을 복습했습니다.`), el("button",{class:"btn primary",onclick:buildDeck},"다시 섞기"))); $("cardPos").textContent=""; return; }
   const x = deck[pos]; $("cardPos").textContent = `${pos+1} / ${deck.length}`;
   const inner = el("div",{style:"display:grid;gap:14px;justify-items:center"},
-    el("div",{class:"meta"}, x.tn), el("div",{class:"front"}, x.w));
+    el("div",{class:"meta"}, `${x.tn} · ${LN[x.lv]}`), el("div",{class:"front"}, x.w));
   if (!revealed){
     inner.append(el("p",{class:"muted small",style:"margin:0"},"손으로 먼저 표현해 본 뒤 그림으로 확인하세요"),
       el("button",{class:"btn primary",onclick:()=>{revealed=true;renderCard();}},"확인하기"));
   } else {
-    const sg = SW[x.w];
-    if (sg){ inner.append(pics(sg,"big"), el("div",{class:"desc",style:"max-width:46ch"}, sg[2])); }
+    const sg = SW[x.w], syn = synOf(x.w);
+    if (sg){ inner.append(pics(sg,"big")); if (syn) inner.append(el("div",{class:"syn"}, syn)); inner.append(el("div",{class:"desc",style:"max-width:46ch"}, sg[2])); }
     else inner.append(el("div",{class:"desc",style:"max-width:46ch"}, NOSIGN));
     if (S.notes[x.w]) inner.append(el("div",{class:"note"}, "내 메모: ", S.notes[x.w]));
     inner.append(el("div",{class:"row",style:"justify-content:center"},
@@ -642,6 +701,7 @@ function renderCard(){
   c.append(inner);
 }
 $("cardTopic").onchange = buildDeck; $("cardUnknown").onchange = buildDeck;
+$("cardPrev").onchange = () => { fillCardTopic(); buildDeck(); };
 
 /* ---------- sentences & dialogs ---------- */
 function glossRow(words, q){
@@ -661,7 +721,7 @@ function dialogCard(d, tk, num){
   const box = el("div",{class:"dialog"});
   const used = [...new Set(d.lines.flatMap(l => l.g).filter(w => SW[w]))];
   const knownN = used.filter(w => S.known[w]).length;
-  box.append(el("div",{class:"dialog-h"}, el("b",{}, `${num}. ${d.title}`), el("span",{class:"muted small"}, `${t?t.n:""}까지 배운 단어 · 익힌 단어 ${knownN}/${used.length}`)));
+  box.append(el("div",{class:"dialog-h"}, el("b",{}, `${num}. ${d.title}`), el("span",{class:"muted small"}, `${t?t.n:""} · 익힌 단어 ${knownN}/${used.length}`)));
   let shown = false;
   const body = el("div",{style:"display:grid;gap:12px"});
   const draw = () => {
@@ -677,17 +737,19 @@ function dialogCard(d, tk, num){
   box.append(body, btn);
   return box;
 }
-let dlgSel = "greet";
 function renderDialogs(){
   const f = $("dlgfilter"); f.replaceChildren();
-  TOPICS.forEach(t => { const n = (DIALOGS[t.k]||[]).length; if (n) f.append(el("button",{ "aria-pressed": dlgSel===t.k, onclick:()=>{ dlgSel=t.k; renderDialogs(); } }, `${t.n} ${n}`)); });
-  const dbox = $("dialogs");
-  dbox.replaceChildren(el("p",{class:"muted small",style:"margin:0"},"먼저 각 줄을 손으로 표현해 보고, 그다음 그림으로 확인하세요. 노란 테두리는 이미 익힌 단어입니다."),
-    ...(DIALOGS[dlgSel]||[]).map((d,i) => dialogCard(d, dlgSel, i+1)));
+  TOPICS.forEach(t => { const n = dlgAt(level, t.k).length; if (n) f.append(el("button",{ "aria-pressed": String(dlgSel===t.k), onclick:()=>{ dlgSel=t.k; renderDialogs(); } }, `${t.n} ${n}`)); });
+  const list = dlgSel ? dlgAt(level, dlgSel) : [];
+  $("dialogs").replaceChildren(
+    el("p",{class:"muted small",style:"margin:0"}, list.length ? "먼저 각 줄을 손으로 표현해 보고, 그다음 그림으로 확인하세요. 노란 테두리는 이미 익힌 단어입니다." : "이 단계에 해당하는 대화가 아직 없습니다."),
+    ...list.map((d,i) => dialogCard(d, dlgSel, i+1)));
 }
 function renderSentences(){
   const box = $("sentences"); box.replaceChildren();
-  SENTS.forEach(s => box.append(el("div",{class:"sent"}, el("div",{class:"k"},s.k), glossRow(s.g, s.q), picStrip(s.g))));
+  const ss = SENTS.filter(s => glvl(s.g) === li(level));
+  if (!ss.length) box.append(el("div",{class:"muted small"}, "이 단계에 해당하는 예문이 아직 없습니다."));
+  ss.forEach(s => box.append(el("div",{class:"sent"}, el("div",{class:"k"},s.k), glossRow(s.g, s.q), picStrip(s.g))));
   renderDialogs();
 }
 
@@ -711,8 +773,7 @@ function renderJournal(){
     el("button",{class:"x",onclick:()=>{ J=J.filter(x=>x!==j); scheduleSave(); renderJournal(); renderToday(); }},"삭제"))));
 }
 
-function renderAll(){ renderToday(); renderTopicFilter(); renderWords(); renderFinger(); renderSentences(); renderJournal(); }
-fillCardTopic();
+function renderAll(){ renderLevelBar(); applyLevel(); renderFinger(); renderJournal(); }
 function enterApp(){
   $("auth").hidden = true; $("app").hidden = false;
   $("who").textContent = fmtPhone(user.phone);
