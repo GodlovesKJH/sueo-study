@@ -187,7 +187,7 @@ window.FIREBASE_CONFIG = {
   <div class="box">
     <div>
       <h1>나의 수어 공부방</h1>
-      <p class="muted" style="margin:4px 0 0">휴대폰번호만으로 시작합니다. 어느 기기에서든 같은 번호로 들어오면 진도가 이어집니다.</p>
+      <p class="muted" style="margin:4px 0 0">휴대폰번호만으로 시작합니다. 어느 기기에서든 같은 번호로 들어오면 진도가 이어지고, 한 번 들어온 기기에서는 다음부터 자동으로 들어갑니다.</p>
     </div>
     <div class="levels" role="tablist" aria-label="가입 또는 로그인">
       <button type="button" role="tab" id="mode-join" aria-selected="true" style="flex:1">처음이에요</button>
@@ -760,11 +760,18 @@ $("authForm").addEventListener("submit", async e => {
 });
 if (!fs) $("authNote").textContent = "지금은 서버 연결 전이라 기록이 이 브라우저에만 저장됩니다.";
 (async () => {
+  /* 자동 로그인: 저장된 번호가 있으면 로그인 화면 없이 바로 들어갑니다 */
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
   const saved = lsGet(USER_KEY);
   if (saved && saved.phone){
     try { await signIn(saved.phone, false); enterApp(); return; }
     catch(e){
       if (e.message==="nouser"){ try { localStorage.removeItem(USER_KEY); } catch(_){} }
+      else if (user && user.phone){
+        /* 인터넷이 불안정해도 로그인 화면으로 돌려보내지 않고, 이 기기에 저장된 기록으로 엽니다 */
+        enterApp(); setSync("연결 안 됨 · 이 기기에 저장된 기록으로 열었습니다");
+        return;
+      }
       else { $("aphone").value = fmtPhone(saved.phone); setAuthMode("login"); $("authMsg").textContent = "연결에 실패했습니다. 인터넷 연결을 확인하고 '들어가기'를 눌러 주세요."; }
     }
   }
