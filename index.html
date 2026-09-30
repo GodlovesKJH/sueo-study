@@ -167,6 +167,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 .userbar button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-size:13px}
 </style>
 <script src="signs.js"></script>
+<script src="signs-extra.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
@@ -358,6 +359,7 @@ window.FIREBASE_CONFIG = {
 (function(){
 const COLL = "sueo-study";
 const SW = window.SIGN_WORDS || {}, SF = window.SIGN_FINGER || {}, IMGB = window.SIGN_IMG_BASE || "";
+const NOSIGN = "한국수어사전에 등록된 수형이 없는 말입니다. 지문자 탭의 '지문자 연습'에서 자모를 확인해 지문자로 표현해 보세요.";
 function pics(entry, cls=""){
   if (!entry || !entry[1] || !entry[1].length) return null;
   const box = el("div",{class:"pics"+(entry[1].length>1?" two":"")+(cls?" "+cls:"")});
@@ -369,10 +371,11 @@ const TOPICS = [
   {k:"greet", n:"인사·기본", w:["안녕하세요","감사합니다","미안합니다","괜찮다","네","아니요","만나다","반갑다","이름","나","너","좋다","싫다","잘 가","수고하다","부탁"]},
   {k:"q", n:"의문사", w:["누구","무엇","어디","언제","왜","어떻게","얼마","몇"]},
   {k:"family", n:"가족", w:["가족","아버지","어머니","할아버지","할머니","형","오빠","누나","언니","동생","아들","딸","남편","아내"]},
-  {k:"time", n:"때·시간", w:["오늘","어제","내일","아침","낮","저녁","시간","주일","월","년","지금","나중"]},
-  {k:"school", n:"학교", w:["학교","선생님","학생","공부","친구","책","질문","교실","숙제","시험","배우다","가르치다"]},
+  {k:"time", n:"때·시간", w:["오늘","어제","내일","아침","낮","저녁","시간","주일","월","년","지금","나중","처음"]},
+  {k:"school", n:"학교", w:["학교","선생님","학생","공부","친구","책","질문","교실","숙제","시험","배우다","가르치다","반(학급)","기초","연습하다","복습","반복"]},
   {k:"feel", n:"감정·상태", w:["기쁘다","슬프다","화나다","무섭다","피곤하다","아프다","배고프다","사랑","행복","걱정","기분","재미있다"]},
-  {k:"life", n:"생활·동작", w:["집안","쌀밥","물","화장실","병원","가다","오다","먹다","자다","알다","모르다","돕다","천천히","다시","말하다","수어"]}
+  {k:"life", n:"생활·동작", w:["집안","쌀밥","물","화장실","병원","가다","오다","먹다","자다","알다","모르다","돕다","천천히","다시","말하다","수어","보다","듣다","살다","빨리","커피","스타벅스"]},
+  {k:"cmp", n:"비교·정도", w:["같다","다르다","어렵다","쉽다","대단하다"]}
 ];
 const ALLWORDS = TOPICS.flatMap(t => t.w.map(w => ({w, t:t.k, tn:t.n})));
 
@@ -392,7 +395,13 @@ const SENTS = [
   {k:"가족이 몇 명이에요?", g:["가족","몇"], q:true},
   {k:"내일 학교에서 만나요.", g:["내일","학교","만나다"]},
   {k:"도와주셔서 감사합니다.", g:["돕다","감사합니다"]},
-  {k:"모르겠어요. 미안합니다.", g:["모르다","미안합니다"]}
+  {k:"모르겠어요. 미안합니다.", g:["모르다","미안합니다"]},
+  {k:"수어는 처음이에요.", g:["수어","처음"]},
+  {k:"이 커피 얼마예요?", g:["커피","얼마"], q:true},
+  {k:"내일 스타벅스에서 만나요.", g:["내일","스타벅스","만나다"]},
+  {k:"천천히 말하면 쉬워요.", g:["천천히","말하다","쉽다"]},
+  {k:"복습하고 반복해서 연습해요.", g:["복습","반복","연습하다"]},
+  {k:"잘 보고 잘 들으세요.", g:["보다","듣다"]}
 ];
 // 주제별 대화: 그 주제까지 배운 단어로만 구성 (A/B 번갈아). "(지문자로 이름)"처럼 괄호는 그림 없는 안내
 const DIALOGS = {
@@ -431,7 +440,12 @@ const DIALOGS = {
     {k:"미안해요, 잘 모르겠어요.", g:["미안합니다","모르다"]},
     {k:"천천히 다시 말해 주세요.", g:["천천히","다시","말하다","부탁"]},
     {k:"알겠어요. 제가 도와줄게요.", g:["알다","나","돕다"]},
-    {k:"감사합니다. 수어 공부가 재미있어요!", g:["감사합니다","수어","공부","재미있다"]} ]}
+    {k:"감사합니다. 수어 공부가 재미있어요!", g:["감사합니다","수어","공부","재미있다"]} ]},
+  cmp: {title:"수어 공부 이야기", lines:[
+    {k:"수어 공부 어때요?", g:["수어","공부","어떻게"], q:true},
+    {k:"처음이라 어려워요.", g:["처음","어렵다"]},
+    {k:"천천히 반복하면 쉬워요.", g:["천천히","반복","쉽다"]},
+    {k:"정말 대단하네요!", g:["대단하다"]} ]}
 };
 const SPELL_WORDS = ["사랑","서울","부산","학교","바다","나무","커피","김치","우유","하늘","친구","버스","컴퓨터","피아노","토끼","딸기","색깔"];
 const GATE = 70;
@@ -584,7 +598,7 @@ function renderWords(){
     card.append(
       el("div",{class:"row",style:"justify-content:space-between"}, el("span",{class:"w"},x.w), el("span",{class:"muted small"},x.tn)),
       pics(sg),
-      sg ? el("div",{class:"desc"}, sg[2]) : null,
+      sg ? el("div",{class:"desc"}, sg[2]) : el("div",{class:"desc"}, NOSIGN),
       el("div",{class:"acts"}, el("span"), el("label",{class:"check"}, cb, "익힘")),
       el("details",{open: S.notes[x.w]?true:false}, el("summary",{}, S.notes[x.w]?"내 메모":"메모 추가"), ta)
     );
@@ -595,7 +609,7 @@ function renderWords(){
     if (q && !items.length) return;
     if (topicSel==="all" || q) box.append(el("div",{class:"topic-h"}, el("h3",{},t.n), el("span",{class:"muted small"},`${t.w.filter(w=>S.known[w]).length}/${t.w.length} 익힘`)));
     items.forEach(x => box.append(cardFor(x)));
-    if (!q) box.append(dialogCard(t.k));
+    if (!q){ const dc = dialogCard(t.k); if (dc) box.append(dc); }
   });
   if (q && !list.length) box.append(el("div",{class:"empty muted"}, hide ? "검색 결과가 없습니다. '익힌 단어 숨기기'를 끄면 더 나올 수 있어요." : "검색 결과가 없습니다. 다른 단어나 초성(예: ㄱㅈ)으로 찾아 보세요."));
 }
@@ -656,6 +670,7 @@ function renderCard(){
   } else {
     const sg = SW[x.w];
     if (sg){ inner.append(pics(sg,"big"), el("div",{class:"desc",style:"max-width:46ch"}, sg[2])); }
+    else inner.append(el("div",{class:"desc",style:"max-width:46ch"}, NOSIGN));
     if (S.notes[x.w]) inner.append(el("div",{class:"note"}, "내 메모: ", S.notes[x.w]));
     inner.append(el("div",{class:"row",style:"justify-content:center"},
         el("button",{class:"btn",onclick:()=>{pos++;revealed=false;renderCard();}},"다시 볼게요"),
