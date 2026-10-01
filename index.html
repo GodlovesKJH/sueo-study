@@ -240,7 +240,7 @@ window.FIREBASE_CONFIG = {
     <div data-pane="today">
       <div class="hero">
         <div class="panel">
-          <div class="muted small" id="pctlabel">초급1 진도</div>
+          <div class="muted small" id="pctlabel">1주차 진도</div>
           <div class="row" style="align-items:baseline;gap:8px;margin:6px 0 10px"><span class="big" id="pct">0%</span><span class="muted" id="pctsub"></span></div>
           <div class="bar"><i id="pctbar" style="width:0%"></i></div>
           <div class="gate" id="gate"></div>
@@ -277,7 +277,7 @@ window.FIREBASE_CONFIG = {
     </div>
 
     <div data-pane="finger" hidden>
-      <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다. 지문자·지숫자 진도는 초급1에 포함됩니다.</div>
+      <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다. 지문자·지숫자 진도는 1주차에 포함됩니다.</div>
       <div class="grid">
         <div class="panel">
           <h3 style="margin-bottom:10px">지문자 · 자음</h3>
@@ -503,7 +503,7 @@ function basicStats(){
   const total = a.reduce((s,x) => s+x.total, 0), done = a.reduce((s,x) => s+x.done, 0);
   return {total, done, pct: total ? Math.round(done/total*100) : 0};
 }
-// 초급1~3은 항상 열림 · 중급1은 초급 전체 70% · 중급2는 중급1 70%
+// 1~3주차는 항상 열림 · 중급1은 1~3주차 전체 70% · 중급2는 중급1 70%
 function isLocked(lv){
   if (lv==="m1") return basicStats().pct < GATE;
   if (lv==="m2") { const s = levelStats("m1"); return !(s.total > 0 && s.pct >= GATE); }
@@ -528,8 +528,8 @@ function renderMid(){
   if (isLocked(level)){
     $("midbarwrap").hidden = false;
     if (level==="m1"){ const b = basicStats();
-      $("midTitle").textContent = `${n}은 초급 진도 ${GATE}%부터 열립니다`;
-      $("midSub").textContent = `지금 초급 전체 ${b.pct}% · 초급 단어와 지문자를 익히면 진도가 올라갑니다.`;
+      $("midTitle").textContent = `${n}은 1~3주차 진도 ${GATE}%부터 열립니다`;
+      $("midSub").textContent = `지금 1~3주차 전체 ${b.pct}% · 단어와 지문자를 익히면 진도가 올라갑니다.`;
       $("midbar").style.width = Math.min(100, b.pct/GATE*100) + "%";
     } else { const s = levelStats("m1");
       $("midTitle").textContent = `${n}는 중급1 진도 ${GATE}%부터 열립니다`;
@@ -573,7 +573,7 @@ function renderToday(){
   $("pctbar").style.width = s.pct + "%";
   const open = b.pct >= GATE;
   $("gate").innerHTML = open ? "<b>중급1이 열렸습니다.</b> 위쪽 단계 버튼에서 선택하세요."
-    : `중급은 초급 전체 진도 <b>${GATE}%</b>에서 열립니다. 지금 ${b.pct}% · 앞으로 <b>${Math.ceil(b.total*GATE/100) - b.done}개</b> 남았습니다.`;
+    : `중급은 1~3주차 전체 진도 <b>${GATE}%</b>에서 열립니다. 지금 ${b.pct}% · 앞으로 <b>${Math.ceil(b.total*GATE/100) - b.done}개</b> 남았습니다.`;
   const rows = $("topicrows"); rows.replaceChildren();
   const lines = [...(level==="c1" ? [{n:"지문자·지숫자", d:s.kf, t:s.ft}] : []),
     ...topicsAt(level).map(t => ({n:t.n, d:t.w[level].filter(w => S.known[w]).length, t:t.w[level].length}))];
