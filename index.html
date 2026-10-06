@@ -44,6 +44,8 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 .levels button[aria-selected="true"]{background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .levels button.locked{color:var(--lock)}
 @media (max-width:520px){.levels button{padding:8px 9px;font-size:14px}}
+#levelbar{flex-wrap:wrap;overflow-x:visible}
+#levelbar button{flex:1 0 auto;text-align:center}
 nav.sub{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:22px;scrollbar-width:none}
 nav.sub button{border:0;background:none;padding:10px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent;font-weight:500}
 nav.sub button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -576,9 +578,7 @@ function renderToday(){
   $("pct").textContent = s.pct + "%";
   $("pctsub").textContent = s.ft ? `단어 ${s.kw}/${s.nw} · 지문자·지숫자 ${s.kf}/${s.ft}` : `단어 ${s.kw}/${s.nw}`;
   $("pctbar").style.width = s.pct + "%";
-  const open = b.pct >= GATE;
-  $("gate").innerHTML = open ? "<b>중급1이 열렸습니다.</b> 위쪽 단계 버튼에서 선택하세요."
-    : `중급은 1~3주차 전체 진도 <b>${GATE}%</b>에서 열립니다. 지금 ${b.pct}% · 앞으로 <b>${Math.ceil(b.total*GATE/100) - b.done}개</b> 남았습니다.`;
+  $("gate").hidden = true; // 중급 단계를 숨긴 동안 해금 안내도 숨김
   const rows = $("topicrows"); rows.replaceChildren();
   const lines = [...(level==="c1" ? [{n:"지문자·지숫자", d:s.kf, t:s.ft}] : []),
     ...topicsAt(level).map(t => ({n:t.n, d:t.w[level].filter(w => S.known[w]).length, t:t.w[level].length}))];
