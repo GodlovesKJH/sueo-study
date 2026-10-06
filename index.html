@@ -84,7 +84,11 @@ a.chip:hover{background:var(--accent-soft)}
 .check input{width:18px;height:18px;accent-color:var(--known)}
 .word textarea{width:100%;min-height:52px;resize:vertical;border:1px solid var(--line);border-radius:8px;background:var(--bg);padding:6px 8px;font-size:13px}
 .word details summary{cursor:pointer;font-size:13px;color:var(--muted)}
-.wsearch{width:100%;font-size:16px;padding:11px 14px;border-radius:12px;background:var(--surface)}
+.sbox{position:relative}
+.sbox svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:22px;height:22px;color:var(--accent);pointer-events:none}
+.sbox input.wsearch{width:100%;height:50px;font-size:16px;padding:0 14px 0 44px;border:2px solid var(--accent);border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:0 2px 8px rgba(51,70,168,.14);-webkit-appearance:none;appearance:none;outline:none}
+.sbox input.wsearch::placeholder{color:var(--muted);opacity:1}
+.sbox input.wsearch:focus{box-shadow:0 0 0 4px var(--accent-soft),0 2px 8px rgba(51,70,168,.14)}
 .empty{grid-column:1/-1;text-align:center;padding:28px 12px}
 .dlg-link{grid-column:1/-1}
 .syn{font-size:12px;color:var(--muted)}
@@ -265,8 +269,9 @@ window.FIREBASE_CONFIG = {
 
     <div data-pane="words" hidden>
       <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
-      <div style="margin-bottom:12px">
-        <input type="search" id="wordSearch" class="wsearch" placeholder="단어 검색 — 모든 단계 (예: 안녕, 가족, ㄱㅈ)" autocomplete="off" enterkeyhint="search" aria-label="단어 검색">
+      <div class="sbox" style="margin-bottom:12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+        <input type="search" id="wordSearch" class="wsearch" placeholder="단어 검색 (예: 안녕, 가족, ㄱㅈ)" autocomplete="off" enterkeyhint="search" aria-label="단어 검색">
       </div>
       <div class="topics" id="topicfilter"></div>
       <div class="row" style="margin-bottom:12px;justify-content:space-between">
