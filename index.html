@@ -208,6 +208,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 .lvvideo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-6px 4px 14px}
 .lvvideo a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;background:#C4302B;color:#fff;text-decoration:none;font-weight:600;font-size:14px}
 .lvvideo a:hover{filter:brightness(1.08)}
+.lvvideo .vidnote{flex-basis:100%;margin:0;font-size:13px;line-height:1.5;color:var(--muted)}
 </style>
 <script src="vocab.js"></script>
 <script src="signs.js"></script>
@@ -552,7 +553,8 @@ function renderLevelBar(){
   // 그 주차 수업 영상(vocab.js LEVELS 의 v)
   const v = (LEVELS.find(l => l.k===level) || {}).v, box = $("lvvideo");
   box.hidden = !v;
-  box.replaceChildren(...(v ? [el("a",{href:v, target:"_blank", rel:"noopener"}, "▶ ", `${LN[level]} 수업 영상 보기`)] : []));
+  box.replaceChildren(...(v ? [el("a",{href:v, target:"_blank", rel:"noopener"}, "▶ ", `${LN[level]} 수업 영상 보기`),
+    el("p",{class:"vidnote"}, "실제 수어에는 표정과 비수지 신호가 매우 중요합니다. 유투브 강의를 꼭 참고하세요.")] : []));
 }
 function setLevel(l){
   level = l; try { localStorage.setItem("sueo-level", l); } catch(e){}
