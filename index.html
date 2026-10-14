@@ -245,41 +245,14 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 
   <section id="basic">
     <nav class="sub" role="tablist" aria-label="학습 메뉴">
-      <button data-tab="today" aria-selected="true">오늘</button>
-      <button data-tab="words">단어장</button>
+      <button data-tab="words" aria-selected="true">단어장</button>
       <button data-tab="finger">지문자·지숫자</button>
       <button data-tab="cards">카드 복습</button>
       <button data-tab="sent">문장·대화</button>
       <button data-tab="learn">수어 이해</button>
     </nav>
 
-    <div data-pane="today">
-      <div class="hero">
-        <div class="panel">
-          <div class="muted small" id="pctlabel">1주차 진도</div>
-          <div class="row" style="align-items:baseline;gap:8px;margin:6px 0 10px"><span class="big" id="pct">0%</span><span class="muted" id="pctsub"></span></div>
-          <div class="bar"><i id="pctbar" style="width:0%"></i></div>
-          <div class="gate" id="gate"></div>
-        </div>
-        <div class="panel">
-          <h3 style="margin-bottom:8px">오늘 할 일</h3>
-          <ol id="todo" style="margin:0;padding-left:20px;display:grid;gap:6px"></ol>
-          <div class="row" style="margin-top:14px">
-            <button class="btn primary" data-go="cards">카드 복습 시작</button>
-            <button class="btn" data-go="journal">일지 쓰기</button>
-          </div>
-        </div>
-      </div>
-      <div class="panel" style="margin-top:16px">
-        <h3 style="margin-bottom:12px">주제별 진도</h3>
-        <div class="topicrows" id="topicrows"></div>
-      </div>
-      <div class="note-box" style="margin-top:16px">
-        공부 순서 제안: <b>지문자</b>로 손모양에 익숙해지기 → 단계별 <b>단어</b> → 짧은 <b>문장</b>과 <b>대화</b>로 묶어 보기 → 카드로 매일 복습. 그림을 본 뒤 기억할 요령은 단어 카드의 <b>메모</b>에 직접 적어 두세요. 단어 검색은 모든 단계에서 찾아 줍니다.
-      </div>
-    </div>
-
-    <div data-pane="words" hidden>
+    <div data-pane="words">
       <div class="note-box" style="margin-bottom:14px">설명 읽는 법: <b>1지</b>=검지 · <b>2지</b>=중지 · <b>3지</b>=약지 · <b>4지</b>=새끼손가락 · <b>5지</b>=엄지. 그림의 화살표는 움직이는 방향입니다.</div>
       <div class="sbox" style="margin-bottom:12px">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
@@ -463,7 +436,7 @@ const GATE = 70;
 let S = {known:{}, notes:{}, fs:{}};
 let J = []; // journal
 let saveTimer = null;
-let level = "c1", topicSel = "all", dlgSel = "", curTab = "today";
+let level = "c1", topicSel = "all", dlgSel = "", curTab = "words";
 try { const sv = localStorage.getItem("sueo-level"); if (LV.includes(sv)) level = sv; } catch(e){}
 const DATA_KEY = "sueo-data";
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)||"null"); } catch(e){ return null; } };
@@ -620,27 +593,8 @@ function leaveDlg(){ if (dlgOpen){ dlgOpen = false; try { history.back(); } catc
 document.querySelectorAll("nav.sub button").forEach(b => b.onclick = () => { leaveDlg(); setTab(b.dataset.tab); });
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { leaveDlg(); setTab(b.dataset.go); });
 
-/* ---------- today ---------- */
-function renderToday(){
-  const s = levelStats(level), b = basicStats();
-  $("pctlabel").textContent = `${LN[level]} 진도`;
-  $("pct").textContent = s.pct + "%";
-  $("pctsub").textContent = s.ft ? `단어 ${s.kw}/${s.nw} · 지문자·지숫자 ${s.kf}/${s.ft}` : `단어 ${s.kw}/${s.nw}`;
-  $("pctbar").style.width = s.pct + "%";
-  $("gate").hidden = true; // 중급 단계를 숨긴 동안 해금 안내도 숨김
-  const rows = $("topicrows"); rows.replaceChildren();
-  const lines = [...(level==="c1" ? [{n:"지문자·지숫자", d:s.kf, t:s.ft}] : []),
-    ...topicsAt(level).map(t => ({n:t.n, d:t.w[level].filter(w => S.known[w]).length, t:t.w[level].length}))];
-  lines.forEach(l => rows.append(el("div",{class:"topicrow"}, el("b",{},l.n), el("div",{class:"bar"}, el("i",{style:`width:${l.d/l.t*100}%`})), el("span",{},`${l.d}/${l.t}`))));
-  const todo = $("todo"); todo.replaceChildren();
-  const next = lines.find(l => l.d < l.t);
-  const today = new Date(Date.now()+9*3600e3).toISOString().slice(0,10);
-  const wroteToday = J.some(j => j.date === today);
-  if (next) todo.append(el("li",{}, `${next.n}: 새로 ${Math.min(5, next.t-next.d)}개 익히기`));
-  todo.append(el("li",{}, `카드 복습 10장`));
-  todo.append(el("li",{}, wroteToday ? "학습 일지 작성 완료 ✓" : "학습 일지 한 줄 남기기"));
-  renderLevelBar();
-}
+/* 진도 표시가 바뀌는 곳에서 부르던 함수(오늘 탭 삭제 2026-10-15 후 단계 버튼만 갱신) */
+function renderToday(){ renderLevelBar(); }
 
 /* ---------- words ---------- */
 function renderTopicFilter(){
@@ -881,7 +835,7 @@ function renderJournal(){
 function renderAll(){ renderLevelBar(); applyLevel(); renderFinger(); renderJournal(); }
 function enterApp(){
   renderAll();
-  try { const t = localStorage.getItem("sueo-tab"); if (t && t!=="journal") setTab(t); } catch(e){}
+  try { const t = localStorage.getItem("sueo-tab"); if (t && t!=="journal" && t!=="today") setTab(t); } catch(e){}
 }
 
 /* ---------- 백업·가져오기 ---------- */
