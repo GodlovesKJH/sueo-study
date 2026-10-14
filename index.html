@@ -71,17 +71,9 @@ nav.sub button[aria-selected="true"]{background:var(--accent);color:var(--accent
 .chip{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:var(--sunk);font-size:13px;text-decoration:none;color:var(--ink)}
 a.chip:hover{background:var(--accent-soft)}
 
-/* 오늘 */
-.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
-@media (max-width:720px){.hero{grid-template-columns:1fr}}
-.big{font-family:var(--mono);font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+/* 진도 막대(중급 잠금 화면) */
 .bar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
 .bar>i{display:block;height:100%;background:var(--known);border-radius:99px}
-.topicrows{display:grid;gap:10px}
-.topicrow{display:grid;grid-template-columns:110px 1fr 56px;gap:10px;align-items:center;font-size:14px}
-.topicrow b{font-weight:500}
-.topicrow span{font-family:var(--mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
-.gate{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--accent-soft);font-size:14px}
 
 /* 단어장 */
 .topics{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
@@ -582,7 +574,7 @@ function applyLevel(){
   if (topicSel!=="all" && !topicsAt(level).some(t => t.k===topicSel)) topicSel = "all";
   const withDlg = TOPICS.filter(t => dlgAt(level, t.k).length);
   if (!withDlg.some(t => t.k===dlgSel)) dlgSel = withDlg.length ? withDlg[0].k : "";
-  fillCardTopic(); renderToday(); renderTopicFilter(); renderWords(); renderSentences(); renderNotes();
+  fillCardTopic(); renderTopicFilter(); renderWords(); renderSentences(); renderNotes();
   if (curTab==="cards") buildDeck();
 }
 
@@ -610,10 +602,7 @@ window.addEventListener("popstate", () => {
 // 사용자가 메뉴로 직접 탭을 옮기면 남은 기록 한 칸을 조용히 정리(이때 popstate는 무시됨)
 function leaveDlg(){ if (dlgOpen){ dlgOpen = false; try { history.back(); } catch(e){} } }
 document.querySelectorAll("nav.sub button").forEach(b => b.onclick = () => { leaveDlg(); setTab(b.dataset.tab); });
-document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { leaveDlg(); setTab(b.dataset.go); });
 
-/* 진도 표시가 바뀌는 곳에서 부르던 함수(오늘 탭 삭제 2026-10-15 후 단계 버튼만 갱신) */
-function renderToday(){ renderLevelBar(); }
 
 /* ---------- words ---------- */
 function renderTopicFilter(){
@@ -637,7 +626,7 @@ function renderWords(){
   const cardFor = x => {
     const cb = el("input",{type:"checkbox", id:"k-"+x.w}); cb.checked = !!S.known[x.w];
     const card = el("div",{class:"word"+(S.known[x.w]?" is-known":"")});
-    cb.onchange = () => { if (cb.checked) S.known[x.w]=true; else delete S.known[x.w]; card.classList.toggle("is-known", cb.checked); scheduleSave(); renderToday(); };
+    cb.onchange = () => { if (cb.checked) S.known[x.w]=true; else delete S.known[x.w]; card.classList.toggle("is-known", cb.checked); scheduleSave(); };
     const ta = el("textarea",{id:"n-"+x.w, placeholder:"그림을 보고 기억할 요령 (예: 손모양, 움직임 방향)"}); ta.value = S.notes[x.w]||"";
     ta.oninput = () => { if (ta.value.trim()) S.notes[x.w]=ta.value; else delete S.notes[x.w]; scheduleSave(); };
     const sg = SW[x.w], syn = synOf(x.w);
@@ -672,7 +661,7 @@ function renderFinger(){
     const id = pre+c, sg = SF[id];
     const b = el("button",{class:S.fs[id]?"is-known":"", "aria-pressed":String(!!S.fs[id]), title:(sg?sg[2]+"\n":"")+"눌러서 익힘 표시"},
       sg && sg[1][0] ? el("img",{src:imgSrc(sg[1][0]), alt:c+" 수형 그림", loading:"lazy", referrerpolicy:"no-referrer"}) : null, c);
-    b.onclick = () => { if (S.fs[id]) delete S.fs[id]; else S.fs[id]=true; b.classList.toggle("is-known", !!S.fs[id]); b.setAttribute("aria-pressed", String(!!S.fs[id])); scheduleSave(); renderToday(); };
+    b.onclick = () => { if (S.fs[id]) delete S.fs[id]; else S.fs[id]=true; b.classList.toggle("is-known", !!S.fs[id]); b.setAttribute("aria-pressed", String(!!S.fs[id])); scheduleSave(); };
     box.append(b); }); };
   mk($("jamoC"), CONS, "c:"); mk($("jamoV"), VOWS, "v:"); mk($("nums"), NUMS, "n:");
   ["jamoC","jamoV","nums"].forEach(id => $(id).classList.add("pic"));
@@ -731,7 +720,7 @@ function renderCard(){
     if (S.notes[x.w]) inner.append(el("div",{class:"note"}, "내 메모: ", S.notes[x.w]));
     inner.append(el("div",{class:"row",style:"justify-content:center"},
         el("button",{class:"btn",onclick:()=>{pos++;revealed=false;renderCard();}},"다시 볼게요"),
-        el("button",{class:"btn known",onclick:()=>{S.known[x.w]=true;scheduleSave();renderToday();renderWords();pos++;revealed=false;renderCard();}},"익혔어요")));
+        el("button",{class:"btn known",onclick:()=>{S.known[x.w]=true;scheduleSave();renderWords();pos++;revealed=false;renderCard();}},"익혔어요")));
   }
   c.append(inner);
 }
@@ -841,7 +830,7 @@ $("jform").addEventListener("submit", e => {
   if (!entry.text) return;
   $("jtext").value = "";
   J.unshift(entry); J.sort((a,b)=>b.date.localeCompare(a.date)); if (J.length > 1000) J.length = 1000;
-  scheduleSave(); renderJournal(); renderToday(); $("jstat").textContent = "기록했습니다";
+  scheduleSave(); renderJournal(); $("jstat").textContent = "기록했습니다";
 });
 function renderJournal(){
   const box = $("jlist"); box.replaceChildren();
@@ -850,7 +839,7 @@ function renderJournal(){
   J.forEach(j => box.append(el("div",{class:"jitem"},
     el("div",{class:"d"}, j.date, el("br"), `${j.minutes||0}분`),
     el("div",{}, j.text),
-    el("button",{class:"x",onclick:()=>{ J=J.filter(x=>x!==j); scheduleSave(); renderJournal(); renderToday(); }},"삭제"))));
+    el("button",{class:"x",onclick:()=>{ J=J.filter(x=>x!==j); scheduleSave(); renderJournal(); }},"삭제"))));
 }
 
 function renderAll(){ renderLevelBar(); applyLevel(); renderFinger(); renderJournal(); }
