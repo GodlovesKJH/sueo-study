@@ -117,6 +117,21 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 .sent .k{font-size:18px;font-weight:600}
 .gloss{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .gloss .arrow{color:var(--muted);font-size:12px}
+.notes-h{margin:22px 0 8px;font-size:15px;color:var(--muted);font-weight:600}
+.notes-h:first-child{margin-top:0}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px}
+.note>summary{cursor:pointer;padding:14px 16px;font-weight:600;font-size:16px;list-style:none;display:flex;gap:8px;align-items:baseline}
+.note>summary::-webkit-details-marker{display:none}
+.note>summary::before{content:"▸";color:var(--muted);flex:none}
+.note[open]>summary::before{content:"▾"}
+.note .tag{margin-left:auto;flex:none;font-size:12px;font-weight:500;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--ink)}
+.note .tag.gen{background:var(--sunk);color:var(--muted)}
+.note-body{padding:0 16px 16px;display:grid;gap:10px;line-height:1.65}
+.note-body p{margin:0}
+.note-body ul{margin:0;padding-left:20px;display:grid;gap:6px}
+.note-ex{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
+.note-ex .k{font-weight:600}
+.note-warn{font-size:14px;color:var(--muted);border-left:3px solid var(--known);padding:4px 10px}
 
 /* 일지 */
 .jform{display:grid;grid-template-columns:auto auto 1fr;gap:10px;align-items:end}
@@ -182,6 +197,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 <script src="signs.js"></script>
 <script src="signs-extra.js"></script>
 <script src="dialogs.js"></script>
+<script src="notes.js"></script>
 </head>
 <body>
 
@@ -209,6 +225,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
       <button data-tab="finger">지문자·지숫자</button>
       <button data-tab="cards">카드 복습</button>
       <button data-tab="sent">문장·대화</button>
+      <button data-tab="learn">수어 이해</button>
       <button data-tab="journal">학습 일지</button>
     </nav>
 
@@ -301,6 +318,10 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
       <p class="muted small" style="margin:0 0 10px">주제를 고르면 그 단계까지 배운 단어로 만든 대화가 나옵니다. A·B 역할을 나눠 손으로 먼저 해 보세요.</p>
       <div class="topics" id="dlgfilter"></div>
       <div class="grid" id="dialogs"></div>
+    </div>
+
+    <div data-pane="learn" hidden>
+      <div id="notes"></div>
     </div>
 
     <div data-pane="journal" hidden>
@@ -539,7 +560,7 @@ function applyLevel(){
   if (topicSel!=="all" && !topicsAt(level).some(t => t.k===topicSel)) topicSel = "all";
   const withDlg = TOPICS.filter(t => dlgAt(level, t.k).length);
   if (!withDlg.some(t => t.k===dlgSel)) dlgSel = withDlg.length ? withDlg[0].k : "";
-  fillCardTopic(); renderToday(); renderTopicFilter(); renderWords(); renderSentences();
+  fillCardTopic(); renderToday(); renderTopicFilter(); renderWords(); renderSentences(); renderNotes();
   if (curTab==="cards") buildDeck();
 }
 
@@ -753,6 +774,48 @@ function renderDialogs(){
   $("dialogs").replaceChildren(
     el("p",{class:"muted small",style:"margin:0"}, list.length ? "먼저 각 줄을 손으로 표현해 보고, 그다음 그림으로 확인하세요. 노란 테두리는 이미 익힌 단어입니다." : "이 단계에 해당하는 대화가 아직 없습니다."),
     ...list.map((d,i) => dialogCard(d, dlgSel, i+1)));
+}
+/* ---------- 수어 이해(설명 카드, notes.js) ---------- */
+function glossArrow(words, q){
+  const g = glossRow(words, q);
+  g.querySelectorAll(".arrow").forEach(a => a.textContent = "→");
+  return g;
+}
+function noteCard(n, open){
+  const body = el("div",{class:"note-body"});
+  n.body.forEach(b => {
+    if (b.p) body.append(el("p",{}, b.p));
+    if (b.ul) body.append(el("ul",{}, ...b.ul.map(x => el("li",{}, x))));
+    if (b.warn) body.append(el("div",{class:"note-warn"}, "※ " + b.warn));
+    if (b.ex){
+      let shown = false;
+      const box = el("div",{style:"display:grid;gap:8px"});
+      const btn = el("button",{class:"btn reveal"}, "그림으로 확인하기");
+      const draw = () => { box.replaceChildren(...b.ex.map(x => el("div",{class:"note-ex"},
+        el("div",{class:"k"}, x.ko), el("div",{class:"muted small"}, "수어 순서"),
+        glossArrow(x.sl, x.q), shown ? picStrip(x.sl) : null)));
+        btn.textContent = shown ? "그림 숨기기" : "그림으로 확인하기"; };
+      btn.onclick = () => { shown = !shown; draw(); };
+      draw(); body.append(box, btn);
+    }
+  });
+  return el("details",{class:"note", open: !!open},
+    el("summary",{}, n.title, el("span",{class:"tag"+(n.src==="general"?" gen":"")}, n.src==="general" ? "일반 설명" : LN[n.lv] + " 수업")),
+    body);
+}
+function renderNotes(){
+  const N = window.NOTES || [], box = $("notes");
+  const cur = N.filter(n => n.src==="class" && n.lv===level);
+  const past = N.filter(n => n.src==="class" && li(n.lv) < li(level)).sort((a,b) => li(b.lv) - li(a.lv));
+  const gen = N.filter(n => n.src==="general");
+  const kids = [el("h3",{class:"notes-h"}, `${LN[level]} 수업 내용`)];
+  if (cur.length) cur.forEach(n => kids.push(noteCard(n, true)));
+  else kids.push(el("p",{class:"muted small",style:"margin:0 0 10px"}, "이 주차에 정리한 수업 설명이 아직 없습니다."));
+  if (past.length){ kids.push(el("h3",{class:"notes-h"}, "지난 수업 내용")); past.forEach(n => kids.push(noteCard(n, false))); }
+  kids.push(el("h3",{class:"notes-h"}, "수어·농문화 일반 설명"));
+  kids.push(el("p",{class:"muted small",style:"margin:0 0 10px"}, "수업 자료가 아닌 일반적인 설명입니다. 수업에서 배운 내용과 다르면 수업 내용을 따르세요."));
+  gen.forEach(n => kids.push(noteCard(n, false)));
+  box.replaceChildren(...kids);
 }
 function renderSentences(){
   const box = $("sentences"); box.replaceChildren();
