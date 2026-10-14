@@ -166,72 +166,41 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 .bubble .k{font-size:17px;font-weight:600}
 .chip.known{background:var(--known-soft);box-shadow:inset 0 0 0 1px var(--known)}
 .dialog .reveal{justify-self:start}
-/* 로그인 */
-.auth{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding-inline:16px;padding-block:40px}
-.auth .box{width:100%;max-width:420px;display:grid;gap:18px}
-.auth form{display:grid;gap:12px}
-.auth label:not(.check){display:grid;gap:4px;font-size:13px;color:var(--muted)}
-.auth input[type=text],.auth input[type=tel]{width:100%;font-size:17px;padding:12px}
-.consent{font-size:13px;color:var(--muted);background:var(--sunk);padding:10px 12px;border-radius:10px;display:grid;gap:6px}
+/* 기록 저장(이 기기) */
 .msg{min-height:1.4em;font-size:14px;color:#C0392B}
-.userbar{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.userbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--muted)}
 .userbar button{border:0;background:none;color:var(--accent);cursor:pointer;padding:0;font-size:13px}
+.notice{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:14px;display:grid;gap:8px;margin:0 0 14px}
+.notice button{justify-self:start}
+.store{display:grid;gap:12px}
+.store .row{display:flex;gap:8px;flex-wrap:wrap}
+.store details{border-top:1px solid var(--line);padding-top:10px}
+.store summary{cursor:pointer;font-size:14px;color:var(--muted)}
+.store input[type=tel]{font-size:16px;padding:10px;max-width:220px}
 </style>
 <script src="vocab.js"></script>
 <script src="signs.js"></script>
 <script src="signs-extra.js"></script>
 <script src="dialogs.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-/* Firebase 웹 설정 (jeahwan-apps) */
-window.FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBJ9ck306Th_faXg5oPK8pjq0oYLUKzuGo",
-  authDomain: "jeahwan-apps.firebaseapp.com",
-  projectId: "jeahwan-apps",
-  storageBucket: "jeahwan-apps.firebasestorage.app",
-  messagingSenderId: "750215565893",
-  appId: "1:750215565893:web:ccc609fd016f238053492c"
-};
-</script>
 </head>
 <body>
 
-<section class="auth" id="auth" hidden>
-  <div class="box">
-    <div>
-      <h1>나의 수어 공부방</h1>
-      <p class="muted" style="margin:4px 0 0">휴대폰번호만으로 시작합니다. 어느 기기에서든 같은 번호로 들어오면 진도가 이어지고, 한 번 들어온 기기에서는 다음부터 자동으로 들어갑니다.</p>
-    </div>
-    <div class="levels" role="tablist" aria-label="가입 또는 로그인">
-      <button type="button" role="tab" id="mode-join" aria-selected="true" style="flex:1">처음이에요</button>
-      <button type="button" role="tab" id="mode-login" aria-selected="false" style="flex:1">가입했어요</button>
-    </div>
-    <form id="authForm" class="panel" novalidate>
-      <label for="aphone">휴대폰번호<input type="tel" id="aphone" inputmode="numeric" autocomplete="tel" placeholder="010-1234-5678" required></label>
-      <div class="consent" id="consentRow">
-        <div>수집 항목: 휴대폰번호 · 목적: 학습 기록 저장 · 보관: 탈퇴 요청 시까지</div>
-        <label class="check" style="color:var(--ink)"><input type="checkbox" id="consent"> 개인정보 수집·이용에 동의합니다</label>
-      </div>
-      <button class="btn primary" id="authBtn" type="submit" style="padding:12px">가입하고 시작하기</button>
-      <div class="msg" id="authMsg" role="alert"></div>
-    </form>
-    <p class="muted small" id="authNote" style="margin:0">비밀번호가 없으므로 번호를 아는 사람은 기록을 볼 수 있습니다.</p>
-  </div>
-</section>
-
-<div id="app" hidden>
+<div id="app">
 
 <div class="wrap">
   <header class="top">
     <div>
       <h1>나의 수어 공부방</h1>
       <div class="muted small">한국수어 · 그림과 설명은 국립국어원 한국수어사전 자료입니다 <span class="sync" id="sync"></span></div>
-      <div class="userbar"><span id="who"></span><button type="button" id="logout">로그아웃</button></div>
+      <div class="userbar"><span>학습 기록은 이 폰에만 저장됩니다</span><button type="button" id="gostore">백업·가져오기</button></div>
     </div>
     <div class="levels" id="levelbar" role="tablist" aria-label="단계"></div>
   </header>
   <div class="levelcount" id="levelcount" aria-live="polite"></div>
+  <div class="notice" id="iosNote" hidden>
+    <div><b>아이폰이라면 「홈 화면에 추가」를 해 두세요.</b> 사파리는 이 사이트를 7일 넘게 열지 않으면 저장된 학습 기록을 지울 수 있습니다. 공유 버튼(□↑) → 「홈 화면에 추가」로 설치하고 그 아이콘으로 열면 기록이 안전하게 남습니다.</div>
+    <button type="button" class="btn" id="iosOk">알겠습니다</button>
+  </div>
 
   <section id="basic">
     <nav class="sub" role="tablist" aria-label="학습 메뉴">
@@ -344,6 +313,25 @@ window.FIREBASE_CONFIG = {
         </form>
         <div class="jlist" id="jlist"></div>
       </div>
+      <div class="panel store" id="store" style="margin-top:16px">
+        <h3 style="margin:0">기록 저장·백업</h3>
+        <p class="muted small" style="margin:0">계정이 없습니다. 진도·메모·일지는 이 폰의 이 브라우저 안에만 저장되고 서버로 보내지 않습니다. 폰을 바꾸거나 브라우저 기록을 지우면 사라지므로, 가끔 백업 파일을 저장해 두세요. 새 폰에서는 「백업 파일 불러오기」로 이어서 공부할 수 있습니다.</p>
+        <div class="row">
+          <button type="button" class="btn primary" id="bkSave">백업 파일 저장</button>
+          <button type="button" class="btn" id="bkLoad">백업 파일 불러오기</button>
+          <input type="file" id="bkFile" accept=".json,application/json" hidden>
+        </div>
+        <div class="muted small" id="bkMsg" role="status"></div>
+        <details>
+          <summary>예전에 휴대폰번호로 쓰던 기록 가져오기</summary>
+          <p class="muted small">예전 방식(휴대폰번호로 들어가기)에서 서버에 남은 기록을 한 번 읽어 와 이 폰의 기록과 합칩니다. 번호는 저장하지 않습니다.</p>
+          <div class="row">
+            <input type="tel" id="oldPhone" inputmode="numeric" placeholder="010-1234-5678" aria-label="예전에 쓰던 휴대폰번호">
+            <button type="button" class="btn" id="oldGo">가져오기</button>
+          </div>
+          <div class="msg" id="oldMsg" role="alert"></div>
+        </details>
+      </div>
     </div>
     <p class="credit">수형 그림·수형 설명 출처: <a href="https://sldict.korean.go.kr/" target="_blank" rel="noopener">국립국어원 한국수어사전</a> (CC BY-NC-ND 2.0 KR, 비영리 학습용으로 원본 그대로 사용)</p>
   </section>
@@ -425,63 +413,58 @@ const dlgAt = (lv, tk) => (DIALOGS[tk] || []).filter(d => glvl(d.lines.flatMap(l
 const SPELL_WORDS = ["사랑","서울","부산","학교","바다","나무","커피","김치","우유","하늘","친구","버스","컴퓨터","피아노","토끼","딸기","색깔"];
 const GATE = 70;
 
-/* ---------- state & storage ---------- */
+/* ---------- state & storage (계정 없음 · 이 기기에만 저장) ---------- */
 let S = {known:{}, notes:{}, fs:{}};
 let J = []; // journal
-let ref = null, user = null, saving = false, dirty = false, saveTimer = null;
+let saveTimer = null;
 let level = "c1", topicSel = "all", dlgSel = "", curTab = "today";
 try { const sv = localStorage.getItem("sueo-level"); if (LV.includes(sv)) level = sv; } catch(e){}
-const USER_KEY = "sueo-user";
-const cacheKey = () => "sueo-v1-" + (user ? user.phone : "guest");
+const DATA_KEY = "sueo-data";
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)||"null"); } catch(e){ return null; } };
-const lsSet = () => { try { localStorage.setItem(cacheKey(), JSON.stringify({S, J})); } catch(e){} };
 const syncEl = document.getElementById("sync");
 const setSync = t => syncEl.textContent = t ? " · " + t : "";
-const CLOUD = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey && window.firebase);
-let fs = null;
-if (CLOUD){ try { firebase.initializeApp(window.FIREBASE_CONFIG); fs = firebase.firestore(); } catch(e){ console.error(e); } }
-
+function normData(d){
+  d = d || {}; const s = d.S || d;
+  return {S:{known:{...(s.known||{})}, notes:{...(s.notes||{})}, fs:{...(s.fs||{})}},
+          J: Array.isArray(d.J) ? d.J : (Array.isArray(d.journal) ? d.journal : [])};
+}
+const countOf = d => Object.keys(d.S.known).length + Object.keys(d.S.notes).length + Object.keys(d.S.fs).length + d.J.length;
+function writeLocal(){
+  try { localStorage.setItem(DATA_KEY, JSON.stringify({v:1, S, J, updatedAt:new Date().toISOString()})); return true; }
+  catch(e){ console.error(e); return false; }
+}
 function scheduleSave(){
-  lsSet(); dirty = true;
-  clearTimeout(saveTimer); saveTimer = setTimeout(flush, 800);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => setSync(writeLocal() ? "이 폰에 저장됨" : "저장 실패 · 저장 공간을 확인해 주세요"), 300);
 }
-async function flush(){
-  if (!ref || saving || !dirty) { if (!ref) setSync("이 브라우저에 저장됨"); return; }
-  saving = true; dirty = false; setSync("저장 중…");
-  try { await ref.update({known:S.known, notes:S.notes, fs:S.fs, journal:J, updatedAt:new Date().toISOString()}); setSync("저장됨"); }
-  catch(e){ console.error(e); setSync("저장 실패 · 이 브라우저에 임시 보관"); }
-  saving = false; if (dirty) flush();
-}
-
-const normPhone = v => (v||"").replace(/[^0-9]/g, "");
-const fmtPhone = p => p.length===11 ? `${p.slice(0,3)}-${p.slice(3,7)}-${p.slice(7)}` : p;
-
-async function signIn(phone, isNew){
-  user = {phone};
-  const cached = lsGet(cacheKey());
-  S = {known:{}, notes:{}, fs:{}}; J = [];
-  if (cached){ S = Object.assign(S, cached.S||{}); J = cached.J||[]; }
-  if (fs){
-    ref = fs.collection(COLL).doc(phone);
-    const snap = await ref.get();
-    if (snap.exists){
-      const d = snap.data();
-      S = {known:{...(d.known||{})}, notes:{...(d.notes||{})}, fs:{...(d.fs||{})}}; J = Array.isArray(d.journal) ? d.journal : [];
-      ref.update({lastSeen:new Date().toISOString()}).catch(()=>{});
-    } else {
-      if (!isNew) { ref = null; user = null; throw new Error("nouser"); }
-      await ref.set({phone, createdAt:new Date().toISOString(), lastSeen:new Date().toISOString(), known:S.known, notes:S.notes, fs:S.fs, journal:J});
+window.addEventListener("pagehide", () => { if (saveTimer){ clearTimeout(saveTimer); writeLocal(); } });
+// 예전 방식(휴대폰번호)의 기기 사본(sueo-v1-<번호>)을 새 키로 옮깁니다. 기록이 가장 많은 사본을 씁니다.
+function loadLocal(){
+  const cur = lsGet(DATA_KEY);
+  if (cur){ const d = normData(cur); S = d.S; J = d.J; return "loaded"; }
+  let best = null;
+  try {
+    for (let i = 0; i < localStorage.length; i++){
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith("sueo-v1-")) continue;
+      const d = normData(lsGet(k));
+      if (!best || countOf(d) > countOf(best)) best = d;
     }
-    setSync("동기화됨");
-  } else {
-    setSync("이 브라우저에 저장됨");
-  }
-  try { localStorage.setItem(USER_KEY, JSON.stringify(user)); } catch(e){}
-  lsSet();
+  } catch(e){}
+  if (best){ S = best.S; J = best.J; }
+  writeLocal();
+  try { localStorage.removeItem("sueo-user"); } catch(e){}
+  return best ? "migrated" : "new";
 }
-function signOut(){
-  try { localStorage.removeItem(USER_KEY); } catch(e){}
-  location.reload();
+// 두 기록을 합칩니다: 진도는 둘 중 하나라도 체크면 체크, 메모는 이 폰 것이 비어 있을 때만 채움, 일지는 겹치지 않게 더함
+function mergeIn(d){
+  let n = 0;
+  for (const k of ["known","fs"]) for (const [w,v] of Object.entries(d.S[k])) if (v && !S[k][w]) { S[k][w] = v; n++; }
+  for (const [w,v] of Object.entries(d.S.notes)) if (v && !S.notes[w]) { S.notes[w] = v; n++; }
+  const seen = new Set(J.map(j => `${j.date}|${j.minutes}|${j.text}`));
+  for (const j of d.J){ const key = `${j.date}|${j.minutes}|${j.text}`; if (!seen.has(key)){ J.push(j); seen.add(key); n++; } }
+  J.sort((a,b) => String(b.date||"").localeCompare(String(a.date||"")));
+  return n;
 }
 
 /* ---------- helpers ---------- */
@@ -801,54 +784,87 @@ function renderJournal(){
 
 function renderAll(){ renderLevelBar(); applyLevel(); renderFinger(); renderJournal(); }
 function enterApp(){
-  $("auth").hidden = true; $("app").hidden = false;
-  $("who").textContent = fmtPhone(user.phone);
   renderAll();
   try { const t = localStorage.getItem("sueo-tab"); if (t) setTab(t); } catch(e){}
 }
-$("logout").onclick = signOut;
-let authMode = "join";
-function setAuthMode(m){
-  authMode = m;
-  $("mode-join").setAttribute("aria-selected", m==="join"); $("mode-login").setAttribute("aria-selected", m==="login");
-  $("consentRow").hidden = m!=="join"; $("authBtn").textContent = m==="join" ? "가입하고 시작하기" : "들어가기";
-  $("authMsg").textContent = "";
+
+/* ---------- 백업·가져오기 ---------- */
+$("gostore").onclick = () => { setTab("journal"); setTimeout(() => $("store").scrollIntoView({behavior:"smooth", block:"start"}), 50); };
+function afterMerge(n, msgEl, what){
+  writeLocal(); renderAll(); setSync("이 폰에 저장됨");
+  msgEl.textContent = n ? `${what}에서 ${n}건을 합쳤습니다.` : `${what}에 새로 합칠 기록이 없었습니다(이미 모두 있음).`;
 }
-$("mode-join").onclick = () => setAuthMode("join");
-$("mode-login").onclick = () => setAuthMode("login");
-$("aphone").addEventListener("input", e => { const p = normPhone(e.target.value).slice(0,11); e.target.value = fmtPhone(p); });
-$("authForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const phone = normPhone($("aphone").value), msg = $("authMsg");
-  if (!/^01[016789][0-9]{7,8}$/.test(phone)) { msg.textContent = "휴대폰번호를 다시 확인해 주세요. (예: 010-1234-5678)"; return; }
-  if (authMode==="join" && !$("consent").checked) { msg.textContent = "개인정보 수집·이용에 동의해 주세요."; return; }
-  $("authBtn").disabled = true; msg.textContent = "확인 중…";
-  try { await signIn(phone, authMode==="join"); enterApp(); }
-  catch(err){
-    msg.textContent = err.message==="nouser" ? "가입된 번호가 없습니다. '처음이에요'에서 가입해 주세요."
-      : "연결에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요.";
-  }
-  $("authBtn").disabled = false;
-});
-if (!fs) $("authNote").textContent = "지금은 서버 연결 전이라 기록이 이 브라우저에만 저장됩니다.";
-(async () => {
-  /* 자동 로그인: 저장된 번호가 있으면 로그인 화면 없이 바로 들어갑니다 */
-  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
-  const saved = lsGet(USER_KEY);
-  if (saved && saved.phone){
-    try { await signIn(saved.phone, false); enterApp(); return; }
-    catch(e){
-      if (e.message==="nouser"){ try { localStorage.removeItem(USER_KEY); } catch(_){} }
-      else if (user && user.phone){
-        /* 인터넷이 불안정해도 로그인 화면으로 돌려보내지 않고, 이 기기에 저장된 기록으로 엽니다 */
-        enterApp(); setSync("연결 안 됨 · 이 기기에 저장된 기록으로 열었습니다");
-        return;
-      }
-      else { $("aphone").value = fmtPhone(saved.phone); setAuthMode("login"); $("authMsg").textContent = "연결에 실패했습니다. 인터넷 연결을 확인하고 '들어가기'를 눌러 주세요."; }
+$("bkSave").onclick = async () => {
+  writeLocal();
+  const d = new Date(), ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+  const name = `수어공부방-백업-${ymd}.json`;
+  const text = JSON.stringify({app:"sueo-study", v:1, savedAt:d.toISOString(), S, J}, null, 1);
+  const file = new File([text], name, {type:"application/json"});
+  try {
+    if (navigator.canShare && navigator.canShare({files:[file]})) {
+      await navigator.share({files:[file], title:name});
+      $("bkMsg").textContent = "백업 파일을 보냈습니다. 카카오톡 나에게 보내기나 드라이브 등에 보관해 두세요."; return;
     }
+  } catch(e){ if (e && e.name === "AbortError") return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = name;
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  $("bkMsg").textContent = `「${name}」을 내려받았습니다. 다운로드 폴더에서 확인하세요.`;
+};
+$("bkLoad").onclick = () => $("bkFile").click();
+$("bkFile").onchange = async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const raw = JSON.parse(await f.text());
+    if (!raw || (raw.app !== "sueo-study" && !raw.S)) throw new Error("form");
+    afterMerge(mergeIn(normData(raw)), $("bkMsg"), "백업 파일");
+  } catch(err){ $("bkMsg").textContent = "수어 공부방 백업 파일이 아닌 것 같습니다. 파일을 다시 확인해 주세요."; }
+};
+
+/* 예전 휴대폰번호 기록 가져오기: 누를 때만 Firebase를 불러와 문서 하나를 읽습니다(쓰지 않음) */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBJ9ck306Th_faXg5oPK8pjq0oYLUKzuGo",
+  authDomain: "jeahwan-apps.firebaseapp.com",
+  projectId: "jeahwan-apps",
+  storageBucket: "jeahwan-apps.firebasestorage.app",
+  messagingSenderId: "750215565893",
+  appId: "1:750215565893:web:ccc609fd016f238053492c"
+};
+const loadScript = src => new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.append(sc); });
+let oldDb = null;
+async function getOldDb(){
+  if (oldDb) return oldDb;
+  if (!window.firebase){
+    await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
+    await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js");
   }
-  $("auth").hidden = false;
-})();
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  return oldDb = firebase.firestore();
+}
+const normPhone = v => (v||"").replace(/[^0-9]/g, "");
+const fmtPhone = p => p.length===11 ? `${p.slice(0,3)}-${p.slice(3,7)}-${p.slice(7)}` : p;
+$("oldPhone").addEventListener("input", e => { e.target.value = fmtPhone(normPhone(e.target.value).slice(0,11)); });
+$("oldGo").onclick = async () => {
+  const phone = normPhone($("oldPhone").value), msg = $("oldMsg");
+  if (!/^01[016789][0-9]{7,8}$/.test(phone)) { msg.textContent = "휴대폰번호를 다시 확인해 주세요. (예: 010-1234-5678)"; return; }
+  $("oldGo").disabled = true; msg.style.color = ""; msg.textContent = "불러오는 중…";
+  try {
+    const snap = await (await getOldDb()).collection(COLL).doc(phone).get();
+    if (!snap.exists) { msg.textContent = "그 번호로 남은 기록이 없습니다."; }
+    else { msg.textContent = ""; afterMerge(mergeIn(normData(snap.data())), msg, "예전 기록"); msg.style.color = "inherit"; $("oldPhone").value = ""; }
+  } catch(err){ console.error(err); msg.textContent = "불러오지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요."; }
+  $("oldGo").disabled = false;
+};
+
+/* ---------- 시작 ---------- */
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const standalone = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+let iosSeen = false; try { iosSeen = !!localStorage.getItem("sueo-ios-note"); } catch(e){}
+if (isIOS && !standalone && !iosSeen) $("iosNote").hidden = false;
+$("iosOk").onclick = () => { $("iosNote").hidden = true; try { localStorage.setItem("sueo-ios-note", "1"); } catch(e){} };
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+const how = loadLocal();
+enterApp();
+setSync(how === "migrated" ? "예전 기록을 이 폰으로 옮겼습니다" : "이 폰에 저장됨");
 })();
 </script>
 </body>

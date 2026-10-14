@@ -1,16 +1,16 @@
 # 나의 수어 공부방 (sueo-study)
 
-한국수어 기초 학습 웹앱. 휴대폰번호만으로 가입하고 바로 사용합니다.
+한국수어 기초 학습 웹앱. 계정 없이 열자마자 바로 사용합니다.
 
-- 기초: 주제별 단어장(진도 체크·메모), 지문자·지숫자, 카드 복습, 기초 문장, 학습 일지
-- 중급: 기초 진도 70% 달성 시 열림 (내용 추가 예정)
-- 수형 그림·수형 설명: 국립국어원 한국수어사전 (CC BY-NC-ND 2.0 KR, 비영리·원본 그대로 사용) — `signs.js`
-- 저장: Firebase `jeahwan-apps` Firestore, 컬렉션 `sueo-study` (문서 ID = 휴대폰번호)
+- 단계: 1~12주차(수업 진도에 맞춰 단어·대화 추가). 주제별 단어장(진도 체크·메모), 지문자·지숫자, 카드 복습, 문장·대화, 학습 일지
+- 수형 그림·수형 설명: 국립국어원 한국수어사전 (CC BY-NC-ND 2.0 KR, 비영리·원본 그대로 사용) — `signs.js`, `signs-extra.js`
+- 저장: **각자 폰의 브라우저(`localStorage`, 키 `sueo-data`)에만** 저장합니다. 서버로 보내지 않습니다.
+  - 폰 교체·브라우저 기록 삭제에 대비해 「학습 일지」 탭 아래 **백업 파일 저장 / 불러오기**(.json)를 씁니다.
+  - 아이폰 사파리는 오래 안 열면 저장소를 지울 수 있어, 처음 한 번 「홈 화면에 추가」 안내가 나옵니다.
+  - 예전 휴대폰번호 방식(Firebase Firestore `sueo-study`)의 기록은 「예전에 휴대폰번호로 쓰던 기록 가져오기」로 한 번 읽어 와 합칠 수 있습니다(읽기만 함). 정리 후 제거 예정.
 
 ## 단어 추가
-`index.html`의 단어 목록을 바꾼 뒤 `tools/collect_signs.py`로 사전 번호·그림·설명을 다시 모아 `signs.js`를 갱신합니다.
+데이터 파일(`vocab.js`, `dialogs.js` 등)을 바꾼 뒤 `tools/collect_signs.py`로 사전 번호·그림·설명을 다시 모아 `signs.js`를 갱신합니다.
 
-## 설정
-1. `index.html`의 `window.FIREBASE_CONFIG`에 웹 설정값 입력
-2. `firestore.rules.txt`의 블록을 Firestore 규칙에 추가
-3. Settings > Pages > Deploy from a branch > `main` / `(root)`
+## 배포
+Settings > Pages > Deploy from a branch > `main` / `(root)`
