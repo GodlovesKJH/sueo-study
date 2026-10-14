@@ -212,6 +212,8 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 /* 바로가기 · 수업 영상 */
 .installbar{display:flex;margin:0 0 12px}
 .installbar .btn{display:inline-flex;align-items:center;gap:6px}
+.installbar.pulse .btn{animation:pulse 1.2s ease-in-out 4}
+@keyframes pulse{50%{transform:scale(1.06)}}
 .install-how ol{margin:0;padding-left:20px;display:grid;gap:4px}
 .lvvideo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-6px 4px 14px}
 .lvvideo a{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;background:#C4302B;color:#fff;text-decoration:none;font-weight:600;font-size:14px}
@@ -932,45 +934,53 @@ let iosSeen = false; try { iosSeen = !!localStorage.getItem("sueo-ios-note"); } 
 if (isIOS && !standalone && !iosSeen) $("iosNote").hidden = false;
 $("iosOk").onclick = () => { $("iosNote").hidden = true; try { localStorage.setItem("sueo-ios-note", "1"); } catch(e){} };
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
-/* 바탕화면(홈 화면) 바로가기: 크롬·엣지·삼성인터넷은 설치 창을 바로 띄우고, 안 되는 브라우저는 방법을 안내 */
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(e => console.warn(e)));
+/* 바탕화면(홈 화면) 바로가기 — 설명 대신 실제 동작:
+   ① 크롬·엣지·삼성인터넷: 브라우저 설치 창(beforeinstallprompt)을 바로 띄움(아직 준비 전이면 최대 3초 기다림)
+   ② 카톡·네이버 등 앱 안 브라우저(안드로이드): 크롬으로 이 주소를 열어 줌(거기서 버튼을 다시 누르면 설치 창)
+   ③ 아이폰·아이패드: 웹에서 아이콘을 직접 만드는 기능이 없어(애플 제한) 공유 창을 바로 띄움 → 「홈 화면에 추가」만 누르면 됨
+   ④ 이미 설치돼 있으면 버튼을 숨김(getInstalledRelatedApps, manifest related_applications) */
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(e => console.warn(e));
 let installEvt = null;
+const SITE = location.origin + location.pathname.replace(/[^/]*$/, "");
+const ua = navigator.userAgent;
+const inApp = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|BAND\//i.test(ua);
+const isAndroid = /Android/i.test(ua);
 if (standalone) $("installBar").hidden = true;
-window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; });
+try { if (navigator.getInstalledRelatedApps) navigator.getInstalledRelatedApps().then(l => { if (l && l.length) $("installBar").hidden = true; }).catch(() => {}); } catch(e){}
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBar").hidden = false; });
 window.addEventListener("appinstalled", () => {
   installEvt = null; $("installBar").hidden = true;
-  showHow([el("b",{}, "바로가기를 만들었습니다."), " 이제 바탕화면(홈 화면)의 「수어 공부방」 아이콘으로 열면 됩니다."]);
+  showHow([el("b",{}, "바로가기를 만들었습니다."), " 바탕화면(홈 화면)의 「수어 공부방」 아이콘으로 열면 됩니다."]);
 });
 function showHow(kids){ const h = $("installHow"); h.hidden = false;
   h.replaceChildren(el("div",{}, ...kids), el("button",{type:"button", class:"btn", onclick:() => h.hidden = true}, "닫기")); }
-function howSteps(){
-  const ua = navigator.userAgent;
-  const inApp = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp/i.test(ua);
-  const ol = (...li) => el("ol",{}, ...li.map(t => el("li",{}, t)));
-  if (inApp) return [el("p",{style:"margin:0 0 6px"}, el("b",{}, "지금은 앱 안의 브라우저(카톡·네이버 등)로 열려 있습니다.")),
-    ol("오른쪽 위(또는 아래) 메뉴 ⋮ / ··· 에서 「다른 브라우저로 열기」(크롬·사파리·삼성인터넷)를 누릅니다.", "새로 열린 화면에서 이 버튼을 다시 누릅니다.")];
-  if (isIOS) return [el("p",{style:"margin:0 0 6px"}, el("b",{}, "아이폰·아이패드(사파리)")),
-    ol("화면 아래(또는 위)의 공유 버튼(□↑)을 누릅니다.", "목록을 내려 「홈 화면에 추가」를 누릅니다.", "오른쪽 위 「추가」를 누르면 홈 화면에 「수어 공부방」 아이콘이 생깁니다.")];
-  if (/SamsungBrowser/i.test(ua)) return [el("p",{style:"margin:0 0 6px"}, el("b",{}, "삼성 인터넷")),
-    ol("아래쪽 메뉴(≡)를 누릅니다.", "「현재 페이지 추가」 → 「홈 화면」을 누릅니다.")];
-  if (/Android/i.test(ua)) return [el("p",{style:"margin:0 0 6px"}, el("b",{}, "안드로이드(크롬)")),
-    ol("오른쪽 위 ⋮ 메뉴를 누릅니다.", "「홈 화면에 추가」(또는 「앱 설치」)를 누르고 「추가」를 누릅니다.")];
-  if (/Edg\//.test(ua)) return [el("p",{style:"margin:0 0 6px"}, el("b",{}, "엣지(PC)")),
-    ol("오른쪽 위 ··· 메뉴 → 「앱」 → 「이 사이트를 앱으로 설치」를 누릅니다.", "설치되면 바탕화면·시작 메뉴에 「수어 공부방」이 생깁니다.")];
-  if (/Chrome\//.test(ua)) return [el("p",{style:"margin:0 0 6px"}, el("b",{}, "크롬(PC)")),
-    ol("주소창 오른쪽의 설치 아이콘(모니터 모양)을 누르거나, ⋮ 메뉴 → 「전송, 저장, 공유」 → 「바로가기 만들기…」를 누릅니다.", "「창으로 열기」에 체크하고 「만들기」를 누르면 바탕화면에 아이콘이 생깁니다.")];
-  return [el("p",{style:"margin:0 0 6px"}, el("b",{}, "이 브라우저에서는 바로가기를 직접 만들 수 없습니다.")),
-    ol("크롬·엣지·삼성 인터넷(안드로이드), 사파리(아이폰)로 이 주소를 엽니다.", "이 버튼을 다시 누릅니다.")];
+function openInChrome(){
+  const url = SITE + "?install=1";
+  if (/KAKAOTALK/i.test(ua)) { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(url); return; }
+  location.href = "intent://" + url.replace(/^https?:\/\//, "") + "#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(url) + ";end";
 }
+const waitEvt = ms => new Promise(res => { if (installEvt) return res(installEvt);
+  const t = setTimeout(() => res(installEvt), ms);
+  window.addEventListener("beforeinstallprompt", () => { clearTimeout(t); setTimeout(() => res(installEvt), 0); }, {once:true}); });
 $("installBtn").onclick = async () => {
+  const btn = $("installBtn");
+  if (isIOS){
+    if (navigator.share){ try { await navigator.share({title:"나의 수어 공부방", url:SITE}); } catch(e){} }
+    showHow([el("b",{}, "방금 열린 공유 창에서 「홈 화면에 추가」를 누르세요."), " 아이폰은 애플 정책상 웹사이트가 아이콘을 직접 만들 수 없어 이 한 번은 눌러 주셔야 합니다."]);
+    return;
+  }
+  if (inApp && isAndroid){ openInChrome(); return; }
+  if (!installEvt){ btn.disabled = true; btn.lastChild.textContent = " 준비 중…"; await waitEvt(3000); btn.disabled = false; btn.lastChild.textContent = " 바탕화면 바로가기 만들기"; }
   if (installEvt){
     const e = installEvt; installEvt = null;
-    try { e.prompt(); const r = await e.userChoice;
-      if (r && r.outcome === "accepted") return;   // 완료 안내는 appinstalled 에서
-    } catch(err){ console.warn(err); }
+    try { await e.prompt(); const r = await e.userChoice; if (r && r.outcome === "accepted") return; } catch(err){ console.warn(err); }
+    return;   // 취소하면 다음에 브라우저가 다시 준비되면 버튼으로 재시도
   }
-  showHow(howSteps());
+  // 설치 창이 끝내 오지 않음: 이미 설치됐거나, 설치 창을 지원하지 않는 브라우저
+  if (isAndroid && !/Chrome\//.test(ua) && !/SamsungBrowser/i.test(ua)){ openInChrome(); return; }
+  showHow([el("b",{}, "이 폰에는 이미 바로가기가 있거나, 브라우저가 설치를 막았습니다."), " 홈 화면에 「수어 공부방」 아이콘이 없다면 크롬 오른쪽 위 ⋮ → 「홈 화면에 추가」를 눌러 주세요."]);
 };
+if (/[?&]install=1/.test(location.search)) { $("installBar").classList.add("pulse"); }
 const how = loadLocal();
 enterApp();
 setSync(how === "migrated" ? "예전 기록을 이 폰으로 옮겼습니다" : "이 폰에 저장됨");
