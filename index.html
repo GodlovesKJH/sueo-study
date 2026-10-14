@@ -53,9 +53,12 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 @media (max-width:520px){.levels button{padding:8px 9px;font-size:14px}}
 #levelbar{flex-wrap:wrap;overflow-x:visible}
 #levelbar button{flex:1 0 auto;text-align:center}
-nav.sub{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:22px;scrollbar-width:none}
-nav.sub button{border:0;background:none;padding:10px 12px;cursor:pointer;color:var(--muted);white-space:nowrap;border-bottom:2px solid transparent;font-weight:500}
-nav.sub button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+/* 학습 메뉴: 3칸×2줄 버튼(폰 한 화면에 모두 보이게) */
+nav.sub{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:22px}
+nav.sub button{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:11px 4px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px;line-height:1.25;word-break:keep-all;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+nav.sub button:active{transform:translateY(1px)}
+nav.sub button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.totop{display:flex;justify-content:center;margin:18px 0 4px}
 .sync{font-size:12px;color:var(--muted)}
 
 .grid{display:grid;gap:12px}
@@ -248,7 +251,6 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
       <button data-tab="cards">카드 복습</button>
       <button data-tab="sent">문장·대화</button>
       <button data-tab="learn">수어 이해</button>
-      <button data-tab="journal">학습 일지</button>
     </nav>
 
     <div data-pane="today">
@@ -289,6 +291,7 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
         <span class="muted small" id="wordcount"></span>
       </div>
       <div class="words" id="words"></div>
+      <div class="totop"><button type="button" class="btn" id="wordsTop">▲ 맨 위로 가기</button></div>
     </div>
 
     <div data-pane="finger" hidden>
@@ -554,7 +557,7 @@ function renderLevelBar(){
   const v = (LEVELS.find(l => l.k===level) || {}).v, box = $("lvvideo");
   box.hidden = !v;
   box.replaceChildren(...(v ? [el("a",{href:v, target:"_blank", rel:"noopener"}, "▶ ", `${LN[level]} 수업 영상 보기`),
-    el("p",{class:"vidnote"}, "실제 수어에는 표정과 비수지 신호가 매우 중요합니다. 유투브 강의를 꼭 참고하세요.")] : []));
+    el("p",{class:"vidnote"}, "실제 수어에는 표정과 비수지 신호가 매우 중요합니다. 유튜브 강의를 꼭 참고하세요.")] : []));
 }
 function setLevel(l){
   level = l; try { localStorage.setItem("sueo-level", l); } catch(e){}
@@ -878,10 +881,11 @@ function renderJournal(){
 function renderAll(){ renderLevelBar(); applyLevel(); renderFinger(); renderJournal(); }
 function enterApp(){
   renderAll();
-  try { const t = localStorage.getItem("sueo-tab"); if (t) setTab(t); } catch(e){}
+  try { const t = localStorage.getItem("sueo-tab"); if (t && t!=="journal") setTab(t); } catch(e){}
 }
 
 /* ---------- 백업·가져오기 ---------- */
+$("wordsTop").onclick = () => window.scrollTo({top:0, behavior:"smooth"});
 $("gostore").onclick = () => { setTab("journal"); setTimeout(() => $("store").scrollIntoView({behavior:"smooth", block:"start"}), 50); };
 function afterMerge(n, msgEl, what){
   writeLocal(); renderAll(); setSync("이 폰에 저장됨");
