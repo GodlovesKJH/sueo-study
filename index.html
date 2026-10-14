@@ -131,6 +131,8 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 .note-body ul{margin:0;padding-left:20px;display:grid;gap:6px}
 .note-ex{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:10px}
 .note-ex .k{font-weight:600}
+.note-ex .h{font-weight:700;color:var(--accent)}
+.note-ex ul{margin:2px 0 0;padding-left:18px;gap:4px}
 .note-warn{font-size:14px;color:var(--muted);border-left:3px solid var(--known);padding:4px 10px}
 
 /* 일지 */
@@ -792,8 +794,11 @@ function noteCard(n, open){
       const box = el("div",{style:"display:grid;gap:8px"});
       const btn = el("button",{class:"btn reveal"}, "그림으로 확인하기");
       const draw = () => { box.replaceChildren(...b.ex.map(x => el("div",{class:"note-ex"},
-        el("div",{class:"k"}, x.ko), el("div",{class:"muted small"}, "수어 순서"),
-        glossArrow(x.sl, x.q), shown ? picStrip(x.sl) : null)));
+        x.h ? el("div",{class:"h"}, x.h) : null,
+        el("div",{class:"muted small"}, "한국어"), el("div",{class:"k"}, x.ko),
+        el("div",{class:"muted small"}, "한국수어 순서"), glossArrow(x.sl, x.q),
+        x.note ? el("ul",{class:"small"}, ...x.note.map(t => el("li",{}, t))) : null,
+        shown ? picStrip(x.pic || x.sl) : null)));
         btn.textContent = shown ? "그림 숨기기" : "그림으로 확인하기"; };
       btn.onclick = () => { shown = !shown; draw(); };
       draw(); body.append(box, btn);
