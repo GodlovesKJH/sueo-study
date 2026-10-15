@@ -341,15 +341,6 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
           <input type="file" id="bkFile" accept=".json,application/json" hidden>
         </div>
         <div class="muted small" id="bkMsg" role="status"></div>
-        <details>
-          <summary>예전에 휴대폰번호로 쓰던 기록 가져오기</summary>
-          <p class="muted small">예전 방식(휴대폰번호로 들어가기)에서 서버에 남은 기록을 한 번 읽어 와 이 폰의 기록과 합칩니다. 번호는 저장하지 않습니다.</p>
-          <div class="row">
-            <input type="tel" id="oldPhone" inputmode="numeric" placeholder="010-1234-5678" aria-label="예전에 쓰던 휴대폰번호">
-            <button type="button" class="btn" id="oldGo">가져오기</button>
-          </div>
-          <div class="msg" id="oldMsg" role="alert"></div>
-        </details>
       </div>
     </div>
     <p class="credit">수형 그림·수형 설명 출처: <a href="https://sldict.korean.go.kr/" target="_blank" rel="noopener">국립국어원 한국수어사전</a> (CC BY-NC-ND 2.0 KR, 비영리 학습용으로 원본 그대로 사용)</p>
@@ -382,7 +373,6 @@ input[type=text],input[type=search],input[type=date],input[type=number],textarea
 
 <script>
 (function(){
-const COLL = "sueo-study";
 const SW = window.SIGN_WORDS || {}, SF = window.SIGN_FINGER || {}, IMGB = window.SIGN_IMG_BASE || "";
 /* 한국수어누리사전 보충(signs-nuri.js): 영상 대표 장면은 그림 목록 끝에 붙이고(주소 전체), 영상·검색 링크는 NURI_LINK */
 const NPIC = window.NURI_PIC || {}, NLINK = window.NURI_LINK || {};
@@ -435,7 +425,33 @@ const SENTS = [
   {k:"내일 스타벅스에서 만나요.", g:["내일","스타벅스","만나다"]},
   {k:"천천히 말하면 쉬워요.", g:["천천히","말하다","쉽다"]},
   {k:"복습하고 반복해서 연습해요.", g:["복습","반복","연습하다"]},
-  {k:"잘 보고 잘 들으세요.", g:["보다","듣다"]}
+  {k:"잘 보고 잘 들으세요.", g:["보다","듣다"]},
+  // 부정·확인
+  {k:"나는 선생님이 아니에요. 학생이에요.", g:["나","선생님","아니다","학생"]},
+  {k:"이거 맞아요? 틀려요?", g:["맞다","틀리다"], q:true},
+  {k:"오늘은 숙제를 안 해요.", g:["오늘","숙제","안하다"]},
+  {k:"아직 밥을 먹지 않았어요.", g:["쌀밥","먹다","않다(완료부정)"]},
+  // 굴절동사 (A→B 방향)
+  {k:"선생님이 나에게 수어를 가르쳐요. (선생님→나)", g:["선생님","나","수어","가르치다"]},
+  {k:"친구가 나에게 돈을 빌려줘요. (친구→나)", g:["친구","나","돈","빌리다"]},
+  {k:"아버지가 나를 야단쳐요. (아버지→나)", g:["아버지","나","야단치다"]},
+  {k:"나는 어머니에게 선물을 보내요. (나→어머니)", g:["나","어머니","선물","보내다"]},
+  // 비굴절동사
+  {k:"나는 수어를 알아요. 너는 몰라요?", g:["나","수어","알다","너","모르다"], q:true},
+  {k:"옷을 입고 학교에 가요.", g:["옷","입다","학교","가다"]},
+  {k:"밥을 먹고 자요.", g:["쌀밥","먹다","자다"]},
+  // 돈·가격
+  {k:"이 가방 가격이 얼마예요?", g:["가방","가격","얼마"], q:true},
+  {k:"현찰이 없어요. 신용카드로 사요.", g:["현찰","없다","신용카드","사다"]},
+  {k:"커피 가격이 내렸어요. 싸요.", g:["커피","가격","내리다","싸다"]},
+  // 물건·사물
+  {k:"책상에 핸드폰이 있어요.", g:["책상","핸드폰","있다"]},
+  {k:"영화를 보고 싶어요.", g:["영화","보다","~고 싶다"]},
+  {k:"선물로 녹차를 줄게요. (나→너)", g:["선물","녹차","주다"]},
+  // 옷·신발·소품
+  {k:"와이셔츠를 입고 남자구두를 신어요.", g:["와이셔츠","입다","남자구두"]},
+  {k:"잠바를 벗고 앉으세요.", g:["잠바","벗다","앉다"]},
+  {k:"원피스가 예뻐요. 비싸요?", g:["원피스","예쁘다","비싸다"], q:true}
 ];
 // 주제별 대화는 dialogs.js 에 있습니다 (window.DIALOGS = { 주제키: [ {title, lines}, ... ] })
 const DIALOGS = window.DIALOGS || {};
@@ -879,41 +895,6 @@ $("bkFile").onchange = async e => {
     if (!raw || (raw.app !== "sueo-study" && !raw.S)) throw new Error("form");
     afterMerge(mergeIn(normData(raw)), $("bkMsg"), "백업 파일");
   } catch(err){ $("bkMsg").textContent = "수어 공부방 백업 파일이 아닌 것 같습니다. 파일을 다시 확인해 주세요."; }
-};
-
-/* 예전 휴대폰번호 기록 가져오기: 누를 때만 Firebase를 불러와 문서 하나를 읽습니다(쓰지 않음) */
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBJ9ck306Th_faXg5oPK8pjq0oYLUKzuGo",
-  authDomain: "jeahwan-apps.firebaseapp.com",
-  projectId: "jeahwan-apps",
-  storageBucket: "jeahwan-apps.firebasestorage.app",
-  messagingSenderId: "750215565893",
-  appId: "1:750215565893:web:ccc609fd016f238053492c"
-};
-const loadScript = src => new Promise((ok, no) => { const sc = document.createElement("script"); sc.src = src; sc.onload = ok; sc.onerror = no; document.head.append(sc); });
-let oldDb = null;
-async function getOldDb(){
-  if (oldDb) return oldDb;
-  if (!window.firebase){
-    await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
-    await loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js");
-  }
-  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-  return oldDb = firebase.firestore();
-}
-const normPhone = v => (v||"").replace(/[^0-9]/g, "");
-const fmtPhone = p => p.length===11 ? `${p.slice(0,3)}-${p.slice(3,7)}-${p.slice(7)}` : p;
-$("oldPhone").addEventListener("input", e => { e.target.value = fmtPhone(normPhone(e.target.value).slice(0,11)); });
-$("oldGo").onclick = async () => {
-  const phone = normPhone($("oldPhone").value), msg = $("oldMsg");
-  if (!/^01[016789][0-9]{7,8}$/.test(phone)) { msg.textContent = "휴대폰번호를 다시 확인해 주세요. (예: 010-1234-5678)"; return; }
-  $("oldGo").disabled = true; msg.style.color = ""; msg.textContent = "불러오는 중…";
-  try {
-    const snap = await (await getOldDb()).collection(COLL).doc(phone).get();
-    if (!snap.exists) { msg.textContent = "그 번호로 남은 기록이 없습니다."; }
-    else { msg.textContent = ""; afterMerge(mergeIn(normData(snap.data())), msg, "예전 기록"); msg.style.color = "inherit"; $("oldPhone").value = ""; }
-  } catch(err){ console.error(err); msg.textContent = "불러오지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요."; }
-  $("oldGo").disabled = false;
 };
 
 /* ---------- 시작 ---------- */

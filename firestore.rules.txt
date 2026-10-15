@@ -1,8 +1,0 @@
-// (2026-10-14) 앱은 이제 계정 없이 각자 폰에만 저장합니다. 서버에는 더 이상 쓰지 않습니다.
-// 「예전 기록 가져오기」가 남아 있는 동안만 아래처럼 '번호로 문서 하나 읽기'만 허용하세요.
-// Firebase 콘솔 > Firestore > 규칙 에서 기존 sueo-study 블록을 이것으로 바꿉니다.
-match /sueo-study/{phone} {
-  allow get: if true;
-  allow list, create, update, delete: if false;
-}
-// 가져오기 기능을 없앨 때는 위 블록을 지우고(전부 차단) 콘솔에서 sueo-study 컬렉션을 삭제합니다.
