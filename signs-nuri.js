@@ -915,3 +915,319 @@ window.NURI_LINK = {
 };
 (function(){ const W = window.SIGN_WORDS = window.SIGN_WORDS || {}; const N = {"문": ["", [], "※ 한국수어사전에는 없고 한국수어누리사전(국립국어원)에 있는 수형입니다. 사진은 영상의 한 장면이라 움직임은 아래 영상으로 확인하세요.", "문"], "세탁기": ["", [], "한국수어사전·한국수어누리사전에 없는 말입니다. 수업에서 배운 수형을 메모에 적어 두세요. 아래 링크는 다른 사람들이 올린 영상 검색이라 사전 수형이 아니니 선생님께 확인하세요.", "세탁기"], "창문": ["", [], "한국수어사전·한국수어누리사전에 없는 말입니다. 수업에서 배운 수형을 메모에 적어 두세요. 아래 링크는 다른 사람들이 올린 영상 검색이라 사전 수형이 아니니 선생님께 확인하세요.", "창문"], "왕관": ["", [], "한국수어사전·한국수어누리사전에 없는 말입니다. 수업에서 배운 수형을 메모에 적어 두세요. 아래 링크는 다른 사람들이 올린 영상 검색이라 사전 수형이 아니니 선생님께 확인하세요.", "왕관"], "스타벅스": ["", [], "한국수어사전·한국수어누리사전에 없는 말입니다. 수업에서 배운 수형을 메모에 적어 두세요. 아래 링크는 다른 사람들이 올린 영상 검색이라 사전 수형이 아니니 선생님께 확인하세요.", "스타벅스"], "걸다": ["", [], "한국수어사전·한국수어누리사전에 없는 말입니다. 수업에서 배운 수형을 메모에 적어 두세요. 아래 링크는 다른 사람들이 올린 영상 검색이라 사전 수형이 아니니 선생님께 확인하세요.", "걸다"]};
   for (const k in N) if (!W[k]) W[k] = N[k]; })();
+/* 2026-10-21 5과 강의본 단어 보충 */
+Object.assign(window.NURI_PIC, {
+"해(태양)": "https://ksldict.korean.go.kr/kslserv/signFile/video/202210/20/U6OgYoeoSUjtrfSZ.jpg"
+});
+Object.assign(window.NURI_LINK, {
+"밝다": [
+[
+"누리사전 영상: 밝다, 밝아지다, 환하다, (얼굴이) 밝다, 밝아지다,…",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=852"
+]
+],
+"어둡다": [
+[
+"누리사전 영상: 밤, 어둡다, 깜깜하다, (색이) 어둡다",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=459"
+]
+],
+"마시다": [
+[
+"누리사전 영상: 마시다, (물을) 먹다, (음료를) 들이마시다, 음료,…",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=755"
+]
+],
+"수업": [
+[
+"누리사전 영상: 공부, 학습, 수업",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=415"
+]
+],
+"조금": [
+[
+"누리사전 영상: 조금, 적다, 작다",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=328"
+]
+],
+"늦다": [
+[
+"누리사전 영상: 늦다, 느리다, 더디다, 지각, 천천히",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=304"
+]
+],
+"아프리카": [
+[
+"누리사전 영상: 아프리카",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1033"
+],
+[
+"누리사전 영상: 아프리카",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1032"
+]
+],
+"~적있다": [
+[
+"누리사전 영상: 경험, 경험하다, 체험, 체험하다",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=200"
+]
+],
+"~적없다": [
+[
+"누리사전 영상: (경험이나 생각이) 전혀 없다",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=272"
+]
+],
+"그러나": [
+[
+"누리사전 영상: 그러나, 그런데, 하지만, -는데",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=74"
+]
+],
+"덥다": [
+[
+"누리사전 영상: 덥다, 여름",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1494"
+]
+],
+"여름": [
+[
+"누리사전 영상: 덥다, 여름",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1494"
+]
+],
+"춥다": [
+[
+"누리사전 영상: 춥다, 차다, 차갑다, 냉랭하다, 겨울",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1543"
+]
+],
+"겨울": [
+[
+"누리사전 영상: 춥다, 차다, 차갑다, 냉랭하다, 겨울",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1543"
+]
+],
+"봄": [
+[
+"누리사전 영상: 따뜻하다, 따스하다, 따끈하다, 봄",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1497"
+]
+],
+"따뜻하다": [
+[
+"누리사전 영상: 따뜻하다, 따스하다, 따끈하다, 봄",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1497"
+]
+],
+"가을": [
+[
+"누리사전 영상: 바람, 바람이 불다, 가을",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1508"
+]
+],
+"바람": [
+[
+"누리사전 영상: 바람, 바람이 불다, 가을",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1508"
+]
+],
+"해(태양)": [
+[
+"누리사전 영상: 날, 해, 태양(이 뜨다), 동(쪽)",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=250"
+]
+],
+"별": [
+[
+"누리사전 영상: 별",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1605"
+],
+[
+"누리사전 영상: 별, 별(등급)",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1654"
+]
+],
+"구름": [
+[
+"누리사전 영상: 구름",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=396"
+]
+],
+"눈(雪)": [
+[
+"누리사전 영상: 눈, 눈이 내리다, 눈이 오다, 설렁탕",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1597"
+]
+],
+"안개": [
+[
+"누리사전 영상: 안개",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1611"
+]
+],
+"불": [
+[
+"누리사전 영상: 불, 화재",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1517"
+]
+],
+"하늘": [
+[
+"누리사전 영상: 하늘, 하늘색, 하늘빛",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1589"
+]
+],
+"땅": [
+[
+"누리사전 영상: 가루, 흙, 모래, 땅, 토지, 육지",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1549"
+]
+],
+"가루": [
+[
+"누리사전 영상: 가루, 흙, 모래, 땅, 토지, 육지",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1549"
+]
+],
+"꽃": [
+[
+"누리사전 영상: 꽃",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=245"
+]
+],
+"풀": [
+[
+"누리사전 영상: 풀, 잔디, 녹색, 초록, 초록색",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=607"
+]
+],
+"나무": [
+[
+"누리사전 영상: 나무, 수목, 목재, 목요일",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=248"
+]
+],
+"산": [
+[
+"누리사전 영상: 산",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1629"
+]
+],
+"강": [
+[
+"누리사전 영상: 강, 강물, 흐르는 물, 물줄기",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=523"
+]
+],
+"바다": [
+[
+"누리사전 영상: 바다",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1643"
+],
+[
+"누리사전 영상: 바다",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1507"
+]
+],
+"돌": [
+[
+"누리사전 영상: 돌, 단단하다, 딱딱하다, (속된 말로) 제대로 이해하…",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1495"
+]
+],
+"섬": [
+[
+"누리사전 영상: 섬",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1681"
+]
+],
+"제주도": [
+[
+"누리사전 영상: 제주, 제주도, 제주특별자치도",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=997"
+]
+],
+"검정": [
+[
+"누리사전 영상: 검정, 검은색, 검다, 까맣다, 흑색, 흑심, 음흉, …",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=73"
+]
+],
+"흰색": [
+[
+"누리사전 영상: 흰색, 하얀색, 하양, 하얗다, 희다, 이, 치아, 이…",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=387"
+]
+],
+"초록": [
+[
+"누리사전 영상: 녹색, 초록, 초록색",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1620"
+],
+[
+"누리사전 영상: 풀, 잔디, 녹색, 초록, 초록색",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=607"
+]
+],
+"빨강": [
+[
+"누리사전 영상: 빨강, 빨간색, 적색, 빨갛다, 붉다, 피, 빚, 채무…",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=269"
+]
+],
+"20(스물)": [
+[
+"누리사전 영상: 스무, 스물, 이십",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=922"
+]
+],
+"30(서른)": [
+[
+"누리사전 영상: 서른, 삼십",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=932"
+]
+],
+"40(마흔)": [
+[
+"누리사전 영상: 마흔, 사십",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=933"
+]
+],
+"50(쉰)": [
+[
+"누리사전 영상: 쉰, 오십, 오십 원",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=934"
+]
+],
+"60(예순)": [
+[
+"누리사전 영상: 예순, 육십",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=935"
+]
+],
+"70(일흔)": [
+[
+"누리사전 영상: 일흔, 칠십",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=936"
+]
+],
+"80(여든)": [
+[
+"누리사전 영상: 여든, 팔십",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=937"
+]
+],
+"90(아흔)": [
+[
+"누리사전 영상: 아흔, 구십",
+"https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=938"
+]
+],
+"날씨": [
+[
+"유튜브에서 '수어 날씨' 찾아보기(사전 아님, 확인 필요)",
+"https://www.youtube.com/results?search_query=%EC%88%98%EC%96%B4%20%EB%82%A0%EC%94%A8"
+]
+]
+});

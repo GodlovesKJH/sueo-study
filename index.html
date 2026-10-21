@@ -646,7 +646,7 @@ function renderWords(){
     const ta = el("textarea",{id:"n-"+x.w, placeholder:"그림을 보고 기억할 요령 (예: 손모양, 움직임 방향)"}); ta.value = S.notes[x.w]||"";
     ta.oninput = () => { if (ta.value.trim()) S.notes[x.w]=ta.value; else delete S.notes[x.w]; scheduleSave(); };
     const sg = SW[x.w], syn = synOf(x.w);
-    card.append(
+    card.append(...[
       el("div",{class:"row",style:"justify-content:space-between"}, el("span",{class:"w"},x.w), el("span",{class:"muted small"}, q ? `${x.tn} · ${LN[x.lv]}` : x.tn)),
       pics(sg),
       syn ? el("div",{class:"syn"}, syn) : null,
@@ -654,7 +654,7 @@ function renderWords(){
       vlinks(x.w),
       el("div",{class:"acts"}, el("span"), el("label",{class:"check"}, cb, "익힘")),
       el("details",{open: S.notes[x.w]?true:false}, el("summary",{}, S.notes[x.w]?"내 메모":"메모 추가"), ta)
-    );
+    ].filter(c => c != null)); /* 기본 append는 null을 'null' 글자로 넣으므로 빈 항목(그림·같은 수형·영상 링크 없음)을 뺀다 */
     return card;
   };
   TOPICS.filter(t => q || topicSel==="all" || t.k===topicSel).forEach(t => {
