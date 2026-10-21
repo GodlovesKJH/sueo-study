@@ -1154,7 +1154,7 @@ Object.assign(window.NURI_LINK, {
 "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=73"
 ]
 ],
-"흰색": [
+"하얀색": [
 [
 "누리사전 영상: 흰색, 하얀색, 하양, 하얗다, 희다, 이, 치아, 이…",
 "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=387"
@@ -1237,3 +1237,5 @@ Object.assign(window.NURI_LINK, {"경험": [["누리사전 영상: 경험, 경�
 /* 2026-10-21 6강 단어 */
 Object.assign(window.NURI_PIC, {"박물관": "https://ksldict.korean.go.kr/kslserv/signFile/video/main/202309/00KS7yTdMaGHcpvf.jpg"});
 Object.assign(window.NURI_LINK, {"안돼": [["누리사전 영상: 안되다, 막히다, (궁지에) 몰리다, 전혀 못 하다, …", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=216"], ["누리사전 영상: 아깝다, 아끼다, 안타깝다, 안되다, 아깝다, 아쉽다", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1580"]], "되나요?": [["누리사전 영상: 되다, 가능하다", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=175"]], "북한": [["누리사전 영상: 북한, 이북", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1027"]], "뉴스": [["누리사전 영상: 뉴스, 이야기하다, 설득하다", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=753"]], "반(절반)": [["누리사전 영상: 반, 반절, 절반", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=747"]], "외출": [["누리사전 영상: 밖에 나가다, 외출, 외출하다, 밖", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=134"]], "사진": [["누리사전 영상: 사진", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=481"], ["누리사전 영상: 사진, (사진을) 찍다, 촬영, 촬영하다, 카메라, 사…", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=480"]], "박물관": [["누리사전 영상: 박물관", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1661"]], "우주선": [["유튜브에서 '수어 우주선' 찾아보기(사전 아님, 확인 필요)", "https://www.youtube.com/results?search_query=%EC%88%98%EC%96%B4%20%EC%9A%B0%EC%A3%BC%EC%84%A0"]], "홍어": [["유튜브에서 '수어 홍어' 찾아보기(사전 아님, 확인 필요)", "https://www.youtube.com/results?search_query=%EC%88%98%EC%96%B4%20%ED%99%8D%EC%96%B4"]]});
+/* 2026-10-21 6강 단어 2 */
+Object.assign(window.NURI_LINK, {"차갑다": [["누리사전 영상: 춥다, 차다, 차갑다, 냉랭하다, 겨울", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1543"]], "뜨겁다": [["누리사전 영상: 뜨겁다, 열, 열기", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=147"]], "맛이 없다": [["누리사전 영상: 맛없다, 김새다, 에이, 에잇, 흥미가 떨어지다, 식상…", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1500"]], "계곡": [["누리사전 영상: 골짜기, 계곡", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=1651"]], "야채": [["유튜브에서 '수어 야채' 찾아보기(사전 아님, 확인 필요)", "https://www.youtube.com/results?search_query=%EC%88%98%EC%96%B4%20%EC%95%BC%EC%B1%84"]]});
