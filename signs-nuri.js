@@ -1233,3 +1233,4 @@ Object.assign(window.NURI_LINK, {
 });
 /* 2026-10-21 6강 부정표현 3 */
 Object.assign(window.NURI_LINK, {"훔치다": [["누리사전 영상: 훔치다, 도둑, 도둑질, 도둑질하다", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=814"], ["누리사전 영상: 도둑질, 도둑질하다, 훔치다, 슬쩍하다, (남의…", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=815"]], "아이": [["누리사전 영상: 어린이, 꼬마, 어린아이, 땅꼬마", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=324"]], "못하다": [["누리사전 영상: -하지 못하다", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=148"]]});
+Object.assign(window.NURI_LINK, {"경험": [["누리사전 영상: 경험, 경험하다, 체험, 체험하다", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=200"]]});
