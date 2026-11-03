@@ -1246,3 +1246,5 @@ Object.assign(window.NURI_LINK, {"맛있다": [["누리사전 영상: 맛있다,
 Object.assign(window.NURI_LINK, {"매일": [["누리사전 영상: 매일, 맨날, 연일", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=188"], ["누리사전 영상: 매일, 맨날, 연일", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=187"]], "전(前)": [["누리사전 영상: 전, 아까, 조금 전, 미리", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=377"]], "후(後)": [["누리사전 영상: 후, 추후, 이후, (회의나 일이 끝난) 뒤에…", "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=136"]], "주말": [["유튜브에서 '수어 주말' 찾아보기(사전 아님, 확인 필요)", "https://www.youtube.com/results?search_query=%EC%88%98%EC%96%B4%20%EC%A3%BC%EB%A7%90"]]});
 /* 2026-11-03 말하다: 한국수어사전(검지)과 누리사전(손가락 모았다 펴기) 수형이 달라 누리 장면 추가 */
 Object.assign(window.NURI_PIC, {"말하다": "https://ksldict.korean.go.kr/kslserv/signFile/video/202212/30/un8Jl66WTbAijFf5.jpg"});
+/* 2026-11-03 좋아하다: 수업 수형(주먹을 코 앞에서 좌우로 두 번)과 다른 누리 영상 링크 제거 */
+window.NURI_LINK["좋아하다"] = [];
