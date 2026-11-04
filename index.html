@@ -469,9 +469,12 @@ const DATA_KEY = "sueo-data";
 const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)||"null"); } catch(e){ return null; } };
 const syncEl = document.getElementById("sync");
 const setSync = t => syncEl.textContent = t ? " · " + t : "";
+// 단어 이름을 바꾸면 진도·메모 키가 끊기므로 옛 이름 → 새 이름으로 옮깁니다(백업 불러오기에도 적용).
+const RENAMED = {"적다":"(양이) 적다"};
+function renameKeys(o){ for (const [a,b] of Object.entries(RENAMED)) if (a in o){ if (!(b in o)) o[b] = o[a]; delete o[a]; } return o; }
 function normData(d){
   d = d || {}; const s = d.S || d;
-  return {S:{known:{...(s.known||{})}, notes:{...(s.notes||{})}, fs:{...(s.fs||{})}},
+  return {S:{known:renameKeys({...(s.known||{})}), notes:renameKeys({...(s.notes||{})}), fs:{...(s.fs||{})}},
           J: Array.isArray(d.J) ? d.J : (Array.isArray(d.journal) ? d.journal : [])};
 }
 const countOf = d => Object.keys(d.S.known).length + Object.keys(d.S.notes).length + Object.keys(d.S.fs).length + d.J.length;

@@ -718,7 +718,7 @@ window.NURI_LINK = {
 "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=464"
 ]
 ],
-"적다": [
+"(양이) 적다": [
 [
 "누리사전 영상: 조금, 적다",
 "https://ksldict.korean.go.kr/kslserv/sign/signWord.do?signWordId=328"
