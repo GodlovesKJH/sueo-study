@@ -1,11 +1,12 @@
-/* 단계·주제별 단어 목록. 새 단어는 해당 단계(c1~c12)의 배열에 추가하면 됩니다.
-   c1=1주차 … c12=12주차 (중급 m1·m2는 숨김 상태) (화면에 보이는 이름은 아래 LEVELS 의 n 값).
+/* 단계·주제별 단어 목록. 새 단어는 해당 단계(c1~c11)의 배열에 추가하면 됩니다.
+   c1=1주차 … c11=11주차 (중급 m1·m2는 숨김 상태) (화면에 보이는 이름은 아래 LEVELS 의 n 값).
+   - 12주차(c12)는 메뉴에서 뺌(2026-11-18): 12강은 자기소개와 수료만 해서 넣을 내용이 없음.
    - 단어 그림·설명은 signs.js / signs-extra.js 에 같은 이름으로 있어야 그림이 나옵니다(없으면 안내 문구).
    - 한 단어는 한 주제에만 넣으세요. 대화·예문(dialogs.js)은 쓰인 단어 중 가장 높은 단계로 자동 분류됩니다. */
 window.LEVELS = [
   {k:"c1", n:"1주차"}, {k:"c2", n:"2주차", v:"https://youtu.be/GojbkJomQII"}, {k:"c3", n:"3주차", v:"https://youtu.be/edo3jCJmFkU"}, {k:"c4", n:"4주차", v:"https://youtu.be/YmoA4l7h6jE"}, {k:"c5", n:"5주차", v:"https://youtu.be/8dEyrUEkNKI"},
   {k:"c6", n:"6주차", v:"https://youtu.be/Sj54s42QkGI"}, {k:"c7", n:"7주차", v:"https://youtu.be/C8T1VongutU"}, {k:"c8", n:"8주차", v:"https://youtu.be/MIKP2edmXJE"}, {k:"c9", n:"9주차", v:"https://youtu.be/XmRVGPu32j4"}, {k:"c10", n:"10주차", v:"https://youtu.be/ycmqNbKUbaI"},
-  {k:"c11", n:"11주차", v:"https://youtu.be/z7pLLM6N0j0"}, {k:"c12", n:"12주차"}
+  {k:"c11", n:"11주차", v:"https://youtu.be/z7pLLM6N0j0"}
   /* v = 그 주차 수업 영상(유튜브) 주소. 있으면 단계 버튼 아래에 「수업 영상 보기」 링크가 나옵니다.
      중급1·중급2(m1, m2)는 화면에서 숨김. 되살리려면 여기에 {k:"m1", n:"중급1"}, {k:"m2", n:"중급2"} 를 다시 추가 */
 ];
